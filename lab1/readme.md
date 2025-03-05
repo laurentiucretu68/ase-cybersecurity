@@ -192,3 +192,18 @@ openssl dgst -sha256 -verify ecdsa_public.pem -signature semnatura.bin mesaj.txt
 * `-verify ecdsa_public.pem` - utilizează cheia publică `ecdsa_public.pem` pentru verificarea autenticității semnăturii
 * `-signature semnatura.bin` - specifică fișierul `semnatura.bin`, care conține semnătura digitală ce trebuie verificată
 * `mesaj.txt` - fișierul original al cărui conținut trebuie verificat pentru a confirma că nu a fost modificat
+
+<br />
+
+
+## Tool-uri Online pentru Testare Criptografică
+
+### AES
+[![Key Generator](https://img.shields.io/badge/Accesare_Tool-Generate_Random-9C27B0)](https://generate-random.org/encryption-key-generator)  
+[![AES Online Tool](https://img.shields.io/badge/Accesare_Tool-AES_Encryption_Online-4CAF50)](https://aesencryption.net/)  
+
+### RSA
+[![Devglan RSA Tool](https://img.shields.io/badge/Accesare_Tool-Devglan_RSA-009688)](https://www.devglan.com/online-tools/rsa-encryption-decryption)  
+
+### ECDSA
+[![ECDSA Tool](https://img.shields.io/badge/Accesare_Tool-EMN178_ECDSA-FF5722)](https://emn178.github.io/online-tools/ecdsa/key-generator/)  
