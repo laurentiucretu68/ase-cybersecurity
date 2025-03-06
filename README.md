@@ -10,6 +10,7 @@
    - Generarea și gestionarea cheilor criptografice
    - Criptarea și decriptarea datelor
    - Crearea și verificarea semnăturilor digitale
+   - [Temă Practică](/lab1/tema.md)
 
 ## Cum să folosești acest repo
 

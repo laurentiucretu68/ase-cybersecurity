@@ -145,6 +145,8 @@ openssl rsautl -decrypt -inkey private_key.pem -in mesaj_criptat.bin -out mesaj_
 ## Semnături digitale
 
 > Semnăturile digitale sunt utilizate pentru a verifica autenticitatea și integritatea unui mesaj sau fișier, oferind două caracteristici esențiale:
+1. **Non-repudiere** - Asigură că semnatarul nu poate nega ulterior acțiunea de semnare, datorită asociării unice între semnătură și deținătorul cheii private.
+2. **Integritate garantată** - Detectează orice modificare a conținutului după semnare prin algoritmi hash criptografici (SHA-256, SHA3-512).
 
 ![Digital Signatures](/img/signature.png)
 
