@@ -5,7 +5,7 @@
 ## 📚 Classroom
 
 - **Google Classroom**: Cod de înscriere: `rfqrvgu`
-- **Link**: [Accesează cursul](https://classroom.google.com/c/rfqrvgu)
+- **Link**: [Accesează cursul](https://classroom.google.com/c/NzU3NjY0MTYzNDA3)
 
 
 ## 🎓 Prezentări
