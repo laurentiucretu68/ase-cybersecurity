@@ -4,8 +4,8 @@
 
 ## 📚 Classroom
 
-- **Google Classroom**: Cod de înscriere: `lzfaazo`
-- **Link**: [Accesează cursul](https://classroom.google.com/c/NzU3NjY0MTYzNDA3?cjc=lzfaazo)
+- **Google Classroom**: Cod de înscriere: `hrpnczx`
+- **Link**: [Accesează cursul](https://classroom.google.com/c/NzU3NzY0ODUwMDQx?cjc=hrpnczx)
 
 
 ## 🎓 Prezentări
