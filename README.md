@@ -30,6 +30,7 @@
    - Detectarea site-urilor false (phishing)
    - Securitatea email-urilor
    - Conexiuni VPN (Virtual Private Network)
+   - [Temă Practică](/lab2/tema.md)
 
 ## 🚀 Cum să folosești acest repo
 
