@@ -53,30 +53,7 @@ Utilizarea programului `John the Ripper` pentru a recupera parola unei arhive de
 - **Indiciu important**: Parola arhivei este un cuvânt din textul descărcat
 
 ### Pasul 2: Crearea Dicționarului de Parole
-Pentru extragerea eficientă a cuvintelor din text, vă sugerăm următoarele metode:
-
-#### Abordarea recomandată: Script Python simplu
-Crearea unui script Python este cea mai eficientă metodă.
-
-**Configurare mediu de lucru**:
-1. Instalați [Python](https://www.python.org/downloads/)
-2. Descărcați și instalați [Visual Studio Code](https://code.visualstudio.com/download)
-3. Instalați extensia **Python** pentru **VS Code**:
-   - Deschideți VS Code
-   - Accesați secțiunea **Extensions** (`Ctrl+Shift+X` sau `⌘+Shift+X` pe Mac)
-   - Căutați și instalați următoarele extensii:
-      - **Python** (extensia oficială de la Microsoft)
-      - **Pylance** pentru suport îmbunătățit de autocomplete și analiză de cod
-      - **GitHub Copilot** (opțional, dar foarte util): această extensie folosește AI pentru a vă sugera cod și a vă ajuta să scrieți script-ul mai rapid
-
-**Rularea scriptului**:
-- Creați un fișier nou cu extensia `.py`
-- În acest fișier veți scrie scriptul vostru.
-- Deschideți un terminal în VS Code (Terminal > New Terminal)
-- Rulați scriptul cu comanda `python numele_fisierului.py`
-
-#### Nu vă descurcați cu Python?
-Dacă întâmpinați dificultăți cu scrierea scriptului Python **solicitați dicționarul gata creat**: Puteți cere dicționarul specific pentru numărul vostru trimițând un email cu subiectul "Dicționar Lab2 - N" (înlocuiți N cu numărul vostru) la adresele de email indicate. Vom genera și trimite dicționarul specific pentru textul vostru.
+Pentru extragerea eficientă a cuvintelor din text, vă sugerăm  scrierea unui script Python [Link instalare Python](https://www.python.org/downloads/)
 
 
 ### Pasul 3: Extragerea Hash-ului Parolei
