@@ -22,6 +22,16 @@
    - Crearea și verificarea semnăturilor digitale
    - [Temă Practică](/lab1/tema.md)
 
+2. **🌐 [Fundamentele securității în rețele](/lab2/readme.md)**
+   - Adrese IP și funcționalitatea rețelelor
+   - Sistemul de nume de domenii (DNS)
+   - Protocoalele HTTP și HTTPS
+   - Cookies & sessions
+   - Detectarea site-urilor false (phishing)
+   - Securitatea email-urilor
+   - Conexiuni VPN (Virtual Private Network)
+   - [Temă Practică](/lab2/tema.md)
+
 ## 🚀 Cum să folosești acest repo
 
 1. Clonează repository-ul:
