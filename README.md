@@ -10,6 +10,8 @@
 
 ## 🎓 Prezentări
 - **6 Martie 2025** - [Introducere în Securitatea cibernetică](/presentations/prezentare_6.03_I.pdf)
+   - **13 Martie 2025** - [Comentarii tema 1](/presentations/Comentarii_Tema1.pdf)
+- **13 Martie 2025** - [Securitatea rețelelor de calculatoare](/presentations/prezentare_13.03.pdf)
 
 
 ## 📋 Cuprins laboratoare:
