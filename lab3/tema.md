@@ -15,6 +15,7 @@ Fișierele `PCAP` (Packet Capture) sunt un format standard pentru stocarea datel
 * Traficul semnificativ a fost transmis peste FTP
 * Portul utilizat pentru a transmite date este 1091
 * Flag-ul se află într-un fișier ZIP
+* **Important**: Pentru această temă, fișierul `file.pcap` se găsește în același director cu acest document (`/lab3/`)
 
 ## 🎯 Cerințe
 
