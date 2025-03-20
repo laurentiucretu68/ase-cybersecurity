@@ -34,6 +34,15 @@
    - Conexiuni VPN (Virtual Private Network)
    - [Temă Practică](/lab2/tema.md)
 
+3. **🔍 [Rețele Wireless & Analiza Traficului de Rețea](/lab3/readme.md)**
+   - Tipuri de rețele și standarde Wi-Fi
+   - Topologii wireless (Infrastructure, Ad-hoc, Mesh)
+   - Protocoale de securitate wireless (WEP, WPA, WPA2, WPA3)
+   - Bune practici pentru securizarea rețelelor wireless
+   - Instrumente și tehnici de analiză a traficului de rețea
+   - Utilizarea Wireshark pentru captura și analiza pachetelor
+   - [Temă Practică](/lab3/tema.md)
+
 ## 🚀 Cum să folosești acest repo
 
 1. Clonează repository-ul:

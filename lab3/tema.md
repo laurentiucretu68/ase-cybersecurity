@@ -9,7 +9,7 @@ Fișierele `PCAP` (Packet Capture) sunt un format standard pentru stocarea datel
 * **Metadate** despre captură (interfața de rețea folosită, timestamp-uri precise, etc.)
 
 ## 🔍 Descrierea problemei
-În procesul de recunoaștere, un atacator a reușit să salveze o captură a traficului generat de victimă (file.pcap). Printre destinațiile accesate veți identifica servicii care nu au fost securizate corespunzător. Partea interesantă este că unele date de autentificare capturate vor fi utile pentru a descoperi flag-ul acestei probleme.
+În procesul de recunoaștere, un atacator a reușit să salveze o captură a traficului generat de victimă (`file.pcap`). Printre destinațiile accesate veți identifica servicii care nu au fost securizate corespunzător. Partea interesantă este că unele date de autentificare capturate vor fi utile pentru a descoperi flag-ul acestei probleme.
 
 #### Informații suplimentare:
 * Traficul semnificativ a fost transmis peste FTP
@@ -85,3 +85,8 @@ ftp.request.command   # Examinează comenzi FTP
 1. Captură de ecran cu cel puțin 2 fișiere recuperate și conținutul lor
 2. Documentarea pașilor urmați pentru a găsi flag-ul
 3. Flag-ul descoperit (pentru punctaj maxim)
+
+## 📤 Încărcarea rezultatelor
+
+Încărcați rezultatele obținute folosind formularul următor:
+[https://forms.gle/9puBvY3MHERQmgcY7](https://forms.gle/9puBvY3MHERQmgcY7)
