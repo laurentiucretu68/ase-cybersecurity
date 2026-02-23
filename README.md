@@ -2,47 +2,37 @@
 
 > Repo dedicat laboratorului de **Cybersecurity**, unde sunt explorate concepte fundamentale de securitate cibernetică și criptografie.
 
-## 📚 Classroom
+## 📅 Ediții
 
-- **Google Classroom**: Cod de înscriere: `hrpnczx`
-- **Link**: [Accesează cursul](https://classroom.google.com/c/NzU3NzY0ODUwMDQx?cjc=hrpnczx)
+- **[Ediția 2025](/2025/)** - Materiale din ediția anterioară
+- **Ediția 2026** - Ediția curentă (în curs de pregătire)
 
+---
 
-## 🎓 Prezentări
-- **6 Martie 2025** - [Introducere în Securitatea cibernetică](/presentations/prezentare_6.03_I.pdf)
-   - **13 Martie 2025** - [Comentarii tema 1](/presentations/Comentarii_Tema1.pdf)
-- **13 Martie 2025** - [Securitatea rețelelor de calculatoare](/presentations/prezentare_13.03.pdf)
-- **20 Martie 2025** - [Analiza traficului în rețelele de calculatoare](/presentations/prezentare_20.03.pdf)
+## 📚 Ediția 2026
 
+### Classroom
 
-## 📋 Cuprins laboratoare:
+- **Google Classroom**: Cod de înscriere: _TBA_
+- **Link**: _TBA_
 
-1. **🔐 [Elemente de criptografie](/lab1/readme.md)**
-   - Criptare simetrică și asimetrică
-   - Semnături digitale și certificate
-   - Generarea și gestionarea cheilor criptografice
-   - Criptarea și decriptarea datelor
-   - Crearea și verificarea semnăturilor digitale
-   - [Temă Practică](/lab1/tema.md)
+### 🎓 Prezentări
 
-2. **🌐 [Fundamentele securității în rețele](/lab2/readme.md)**
-   - Adrese IP și funcționalitatea rețelelor
-   - Sistemul de nume de domenii (DNS)
-   - Protocoalele HTTP și HTTPS
-   - Cookies & sessions
-   - Detectarea site-urilor false (phishing)
-   - Securitatea email-urilor
-   - Conexiuni VPN (Virtual Private Network)
-   - [Temă Practică](/lab2/tema.md)
+_În curs de actualizare pentru ediția 2026_
 
-3. **🔍 [Rețele Wireless & Analiza Traficului de Rețea](/lab3/readme.md)**
-   - Tipuri de rețele și standarde Wi-Fi
-   - Topologii wireless (Infrastructure, Ad-hoc, Mesh)
-   - Protocoale de securitate wireless (WEP, WPA, WPA2, WPA3)
-   - Bune practici pentru securizarea rețelelor wireless
-   - Instrumente și tehnici de analiză a traficului de rețea
-   - Utilizarea Wireshark pentru captura și analiza pachetelor
-   - [Temă Practică](/lab3/tema.md)
+### 📋 Cuprins laboratoare
+
+#### 🔐 [Lab 4: The DeFi Heist - Blockchain Security & DeFi](2026/lab4-blockchain-defi/)
+
+Laborator practic de securitate blockchain și smart contracts prin scenarii de tip CTF:
+
+- **Challenge 1**: Blockchain Forensics - Investigație on-chain
+- **Challenge 2**: Reentrancy Attack - Vulnerabilități DeFi  
+- **Challenge 3**: Access Control & Private Keys - Securitate criptografică
+
+**Tehnologii**: Ethereum, Solidity, Hardhat, Ganache, MetaMask
+
+[➡️ Accesează Lab 4](2026/lab4-blockchain-defi/)
 
 ## 🚀 Cum să folosești acest repo
 

@@ -1,0 +1,72 @@
+# Dependencies
+node_modules/
+.npm-cache/
+package-lock.json
+yarn.lock
+
+# Hardhat
+cache/
+artifacts/
+typechain/
+typechain-types/
+
+# Coverage
+coverage/
+coverage.json
+
+# Deployment info (might contain sensitive data in real projects)
+deployments/*.json
+!deployments/.gitkeep
+challenge1-data.json
+
+# Per-student generated instance files
+student/instance.json
+student/instance.env
+student/manifest.sig
+instructor/expected/
+instructor/grading/
+submissions/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Private keys (NEVER commit these!)
+*.key
+*.pem
+private-keys/
+secrets/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test data
+test-data/
+*.test.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Challenge-specific (students shouldn't see solutions)
+solutions/
+answers/
+
+# Challenge 3 generated leak artifacts
+.env.backup
+.bash_history_fake
+.secret_config.json

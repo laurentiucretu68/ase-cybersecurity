@@ -1,0 +1,4 @@
+# One identifier per line (email, username, matricol)
+student1@stud.ase.ro
+student2@stud.ase.ro
+student3@stud.ase.ro
