@@ -2,15 +2,6 @@
 
 > Materiale pentru ediția 2026 a laboratorului de **Cybersecurity**
 
-## 📚 Classroom
-
-- **Google Classroom**: Cod de înscriere: _TBA_
-- **Link**: _TBA_
-
-## 🎓 Prezentări
-
-_În curs de actualizare_
-
 ## 📋 Laboratoare
 
 ### 🔐 [Lab 1: Elemente de Criptografie](lab1/readme.md)
