@@ -163,6 +163,7 @@ sudo apt install -y \
     git \
     curl \
     wget \
+    xdotool \
     software-properties-common \
     apt-transport-https \
     ca-certificates \
@@ -387,8 +388,8 @@ cat << 'EOF' | sudo tee "$DESKTOP_DIR/Open-Ganache-GUI.desktop" > /dev/null
 Version=1.0
 Type=Application
 Name=Open Ganache GUI
-Comment=Open Ganache desktop application
-Exec=ganache-gui
+Comment=Open the preconfigured Ganache GUI for DeFi Heist Lab
+Exec=/bin/bash -lc "cd ~/lab4-blockchain-defi && ./start-ganache.sh >> ~/ganache.log 2>&1"
 Icon=applications-development
 Terminal=false
 Categories=Development;
@@ -504,7 +505,8 @@ echo ""
 echo "📖 Manual start commands:"
 echo "  cd ~/lab4-blockchain-defi"
 echo "  npm run init:student -- --student-id <id>"
-echo "  ./start-ganache.sh              # Start blockchain"
+echo "  ./start-ganache.sh              # Open the preconfigured Ganache GUI"
+echo "  LAB_GANACHE_MODE=cli ./start-ganache.sh  # Fallback CLI mode"
 echo "  npm run deploy:all              # Deploy contracts"
 echo "  npm run verify-setup            # Verify setup"
 echo "  code .                          # Open in VS Code"
@@ -514,7 +516,7 @@ echo "  - Install MetaMask in Firefox"
 echo "  - Configure MetaMask for localhost:7545"
 echo "  - Import only the primary Ganache account once per VM"
 echo "  - Check ~/ganache.log if you need the startup details"
-echo "  - Do not start a second Ganache workspace on port 7545 while CLI autostart is running"
+echo "  - Use the Ganache GUI opened by ./start-ganache.sh, not a manually created workspace"
 echo ""
 echo "📧 Support: lcretu@bitdefender.com"
 echo ""

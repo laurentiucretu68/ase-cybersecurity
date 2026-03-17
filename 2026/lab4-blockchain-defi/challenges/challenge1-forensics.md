@@ -45,11 +45,20 @@ Analizează **Input Data** din tranzacția inițială și:
 
 ## 🛠️ Instrumente Necesare
 
-### 1. Ganache Block Explorer (Local)
-În VM, deschide browser-ul și navighează la:
+### 1. Ganache GUI (Local)
+În VM, rulează:
+```bash
+cd ~/lab4-blockchain-defi
+./start-ganache.sh
 ```
-http://localhost:7545
-```
+
+Scriptul pregătește automat Ganache GUI cu:
+- rețeaua locală de laborator pe `127.0.0.1:7545`
+- `network_id = 1337`
+- mnemonic-ul generat pentru student
+- un singur cont vizibil în interfață
+
+Dacă ecranul principal rămâne deschis, folosește `Quickstart` sau workspace-ul `BLOCKCHAIN-DEFI`.
 
 ### 2. Etherscan (Dacă folosești rețea de test)
 Pentru Sepolia Testnet:
@@ -79,20 +88,12 @@ https://sepolia.etherscan.io/
    cd ~/lab4-blockchain-defi
    ./start-ganache.sh
    ```
-   
-   Ar trebui să vezi:
-   ```
-   Ganache CLI v7.7.0
-   Available Accounts
-   (0) 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb5 (100 ETH) <-- Portofel EtherBank
-   (1) 0x... (100 ETH)
-   ...
-   Listening on 127.0.0.1:7545
-   ```
+  
+   În varianta actuală, scriptul deschide Ganache GUI deja configurat pentru laborator și încearcă să pornească automat `Quickstart`.
 
 > Nota VM: Daca laboratorul a fost instalat cu `vm-setup/setup-vm.sh`, ruleaza mai intai `npm run init:student -- --student-id <id>`.
-> Abia dupa generarea instantei Ganache va porni cu datele studentului, automat la login sau manual cu `./start-ganache.sh`.
-> Verifica mai intai `lsof -i :7545`, apoi ruleaza `./start-ganache.sh` doar daca portul nu este deja ocupat.
+> Abia dupa generarea instantei Ganache GUI va porni cu datele studentului, automat la login sau manual cu `./start-ganache.sh`.
+> Nu crea un workspace nou manual pentru fiecare student; foloseste configurarea generata de script.
 >
 > In VM este expus un singur cont Ganache pentru student. Nu importa un cont nou in MetaMask la fiecare restart; refoloseste acelasi cont deja importat pe masina.
 
@@ -109,9 +110,9 @@ https://sepolia.etherscan.io/
 
 ### Pasul 1: Găsește Tranzacția Inițială
 
-1. Deschide **Ganache GUI** sau folosește Ganache CLI:
-   Nu porni un al doilea proces `ganache-cli --deterministic`.
-   Foloseste instanta Ganache deja pornita in VM si interogheaza chain-ul local cu scripturile helper.
+1. Foloseste **Ganache GUI** deschis de `./start-ganache.sh`:
+   Nu porni un al doilea proces `ganache-cli --deterministic` si nu crea un workspace manual separat.
+   Foloseste instanta Ganache deja pregatita in VM si interogheaza chain-ul local cu scripturile helper.
 
 2. Navighează la Block Explorer sau folosește un script pentru a query:
    ```bash
