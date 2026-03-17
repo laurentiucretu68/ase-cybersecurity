@@ -121,7 +121,7 @@ function asEthStringFromTenths(tenths) {
 }
 
 function buildChallenge1(rng, instanceTag) {
-  const companyAccountIndex = rng.int(0, 2);
+  const companyAccountIndex = 0;
   const available = [];
 
   for (let i = 0; i < 10; i += 1) {
@@ -180,7 +180,7 @@ function buildChallenge2(rng) {
 }
 
 function buildChallenge3(rng) {
-  const adminAccountIndex = rng.int(0, 9);
+  const adminAccountIndex = rng.int(1, 9);
   const others = [];
 
   for (let i = 0; i < 10; i += 1) {

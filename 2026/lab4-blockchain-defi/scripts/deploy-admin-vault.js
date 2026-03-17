@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const hre = require("hardhat");
 const { loadInstance, getAccountFromMnemonic } = require("./lib/instance-config");
+const { ensureBalance, requiredBalance } = require("./fund-signers");
 
 function resolveSigners(signers, indices, label) {
   return indices.map((index) => {
@@ -37,6 +38,7 @@ async function main() {
   console.log(`Instance: ${instance.instanceId}`);
 
   const signers = await hre.ethers.getSigners();
+  const [faucetSigner] = signers;
   const adminIndex = cfg.adminAccountIndex;
 
   if (adminIndex < 0 || adminIndex >= signers.length) {
@@ -45,6 +47,13 @@ async function main() {
 
   const adminSigner = signers[adminIndex];
   const adminWallet = getAccountFromMnemonic(instance.chain.mnemonic, adminIndex);
+
+  await ensureBalance(
+    faucetSigner,
+    adminSigner,
+    requiredBalance("0", "2.0"),
+    `challenge3 admin [${adminIndex}]`
+  );
 
   console.log(`Admin signer index: ${adminIndex}`);
   console.log(`Admin signer address: ${adminSigner.address}`);
@@ -70,6 +79,13 @@ async function main() {
   for (let i = 0; i < depositors.length; i += 1) {
     const { index, signer } = depositors[i];
     const amount = cfg.initialDepositsEth[i];
+
+    await ensureBalance(
+      faucetSigner,
+      signer,
+      requiredBalance(amount, "1.0"),
+      `challenge3 depositor [${index}]`
+    );
 
     const tx = await vault.connect(signer).deposit({
       value: hre.ethers.utils.parseEther(String(amount))

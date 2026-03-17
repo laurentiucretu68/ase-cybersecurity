@@ -90,6 +90,12 @@ https://sepolia.etherscan.io/
    Listening on 127.0.0.1:7545
    ```
 
+> Nota VM: Daca laboratorul a fost instalat cu `vm-setup/setup-vm.sh`, ruleaza mai intai `npm run init:student -- --student-id <id>`.
+> Abia dupa generarea instantei Ganache va porni cu datele studentului, automat la login sau manual cu `./start-ganache.sh`.
+> Verifica mai intai `lsof -i :7545`, apoi ruleaza `./start-ganache.sh` doar daca portul nu este deja ocupat.
+>
+> In VM este expus un singur cont Ganache pentru student. Nu importa un cont nou in MetaMask la fiecare restart; refoloseste acelasi cont deja importat pe masina.
+
 2. **Deploy scenariul de forensics**:
    ```bash
    cd ~/lab4-blockchain-defi
@@ -104,9 +110,8 @@ https://sepolia.etherscan.io/
 ### Pasul 1: Găsește Tranzacția Inițială
 
 1. Deschide **Ganache GUI** sau folosește Ganache CLI:
-   ```bash
-   ganache-cli --deterministic
-   ```
+   Nu porni un al doilea proces `ganache-cli --deterministic`.
+   Foloseste instanta Ganache deja pornita in VM si interogheaza chain-ul local cu scripturile helper.
 
 2. Navighează la Block Explorer sau folosește un script pentru a query:
    ```bash

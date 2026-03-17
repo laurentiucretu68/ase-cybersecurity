@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const hre = require("hardhat");
 const { loadInstance } = require("./lib/instance-config");
+const { ensureBalance, requiredBalance } = require("./fund-signers");
 
 function resolveSigner(signers, index, label) {
   if (index < 0 || index >= signers.length) {
@@ -25,9 +26,17 @@ async function main() {
   console.log(`Instance: ${instance.instanceId}`);
 
   const signers = await hre.ethers.getSigners();
+  const [faucetSigner] = signers;
   const companySigner = resolveSigner(signers, cfg.companyAccountIndex, "challenge1 company");
   const hopSigners = cfg.hopAccountIndices.map((index) =>
     resolveSigner(signers, index, "challenge1 hop")
+  );
+
+  await ensureBalance(
+    faucetSigner,
+    companySigner,
+    requiredBalance(cfg.transferAmountsEth[0], "1.0"),
+    `challenge1 company [${cfg.companyAccountIndex}]`
   );
 
   const provider = hre.ethers.provider;

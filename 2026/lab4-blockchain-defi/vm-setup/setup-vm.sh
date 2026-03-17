@@ -18,7 +18,7 @@
 # What this script does:
 #   ✅ Updates system
 #   ✅ Installs Node.js 18 LTS
-#   ✅ Installs Ganache CLI
+#   ✅ Installs Ganache CLI & GUI
 #   ✅ Installs VS Code with extensions
 #   ✅ Installs Firefox with MetaMask
 #   ✅ Clones lab repository
@@ -44,10 +44,23 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-REPO_URL="https://github.com/lcretu/ase-cybersecurity.git"  # UPDATE THIS!
-LAB_DIR="$HOME/lab4-blockchain-defi"
+REPO_URL="https://github.com/laurentiucretu68/ase-cybersecurity.git"  # UPDATE THIS!
+NODE_MAJOR="20"
+RECLONE_IF_EXISTS="false"
 STUDENT_USER="student"
 STUDENT_PASS="cybersec2026"
+STUDENT_HOME="/home/$STUDENT_USER"
+REPO_DIR="$STUDENT_HOME/ase-cybersecurity"
+LAB_DIR="$STUDENT_HOME/lab4-blockchain-defi"
+LAB_REL_PATH="2026/lab4-blockchain-defi"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOCAL_REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+GANACHE_GUI_VERSION="2.7.1"
+GANACHE_GUI_ASSET="ganache-2.7.1-linux-x86_64.AppImage"
+GANACHE_GUI_URL="https://github.com/ConsenSys-archive/ganache-ui/releases/download/v${GANACHE_GUI_VERSION}/${GANACHE_GUI_ASSET}"
+GANACHE_GUI_DIR="/opt/ganache-ui"
+GANACHE_GUI_APPIMAGE="$GANACHE_GUI_DIR/$GANACHE_GUI_ASSET"
+GANACHE_GUI_BIN="/usr/local/bin/ganache-gui"
 
 ################################################################################
 # Helper Functions
@@ -87,6 +100,21 @@ check_command() {
     fi
 }
 
+ensure_student_user() {
+    if id "$STUDENT_USER" &>/dev/null; then
+        print_info "User '$STUDENT_USER' already exists"
+    else
+        print_info "Creating user '$STUDENT_USER'..."
+        sudo useradd -m -s /bin/bash "$STUDENT_USER"
+        echo "$STUDENT_USER:$STUDENT_PASS" | sudo chpasswd
+        sudo usermod -aG sudo "$STUDENT_USER"
+        print_success "User '$STUDENT_USER' created"
+    fi
+
+    sudo mkdir -p "$STUDENT_HOME/Desktop"
+    sudo chown -R "$STUDENT_USER:$STUDENT_USER" "$STUDENT_HOME"
+}
+
 ################################################################################
 # Main Installation Steps
 ################################################################################
@@ -105,6 +133,13 @@ fi
 
 source /etc/lsb-release
 print_info "Detected: $DISTRIB_DESCRIPTION"
+
+################################################################################
+print_header "👤 Step 0: Ensuring Student User"
+################################################################################
+
+ensure_student_user
+print_info "Setup target user: $STUDENT_USER ($STUDENT_HOME)"
 
 ################################################################################
 print_header "📦 Step 1: System Update"
@@ -137,26 +172,26 @@ sudo apt install -y \
 print_success "Essential tools installed"
 
 ################################################################################
-print_header "🟢 Step 3: Installing Node.js 18 LTS"
+print_header "🟢 Step 3: Installing Node.js ${NODE_MAJOR} LTS"
 ################################################################################
 
 if check_command node; then
     NODE_VERSION=$(node --version)
     print_info "Current Node.js version: $NODE_VERSION"
-    read -p "Reinstall Node.js 18? (y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_info "Skipping Node.js installation"
-    else
+    CURRENT_NODE_MAJOR=$(node -p "process.versions.node.split('.')[0]")
+    if [ "$CURRENT_NODE_MAJOR" -ne "$NODE_MAJOR" ]; then
+        print_info "Switching Node.js to ${NODE_MAJOR} LTS for lab compatibility..."
         INSTALL_NODE=true
+    else
+        print_info "Node.js is already ${NODE_MAJOR} LTS; skipping reinstall"
     fi
 else
     INSTALL_NODE=true
 fi
 
 if [ "$INSTALL_NODE" = true ]; then
-    print_info "Installing Node.js 18 LTS..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+    print_info "Installing Node.js ${NODE_MAJOR} LTS..."
+    curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | sudo -E bash -
     sudo apt install -y nodejs
     
     NODE_VERSION=$(node --version)
@@ -167,7 +202,7 @@ if [ "$INSTALL_NODE" = true ]; then
 fi
 
 ################################################################################
-print_header "⚡ Step 4: Installing Ganache CLI"
+print_header "⚡ Step 4: Installing Ganache CLI & GUI"
 ################################################################################
 
 print_info "Installing Ganache globally..."
@@ -178,6 +213,28 @@ if check_command ganache; then
     print_success "Ganache $GANACHE_VERSION installed"
 else
     print_error "Ganache installation failed"
+    exit 1
+fi
+
+print_info "Installing AppImage runtime dependency for Ganache GUI..."
+sudo apt install -y libfuse2
+
+print_info "Installing Ganache GUI v${GANACHE_GUI_VERSION}..."
+sudo mkdir -p "$GANACHE_GUI_DIR"
+sudo wget -q -O "$GANACHE_GUI_APPIMAGE" "$GANACHE_GUI_URL"
+sudo chmod +x "$GANACHE_GUI_APPIMAGE"
+
+cat << EOF | sudo tee "$GANACHE_GUI_BIN" > /dev/null
+#!/bin/bash
+exec "$GANACHE_GUI_APPIMAGE" --no-sandbox "\$@"
+EOF
+
+sudo chmod +x "$GANACHE_GUI_BIN"
+
+if [ -x "$GANACHE_GUI_BIN" ]; then
+    print_success "Ganache GUI installed at $GANACHE_GUI_BIN"
+else
+    print_error "Ganache GUI installation failed"
     exit 1
 fi
 
@@ -228,13 +285,16 @@ print_info "Bookmark: https://addons.mozilla.org/firefox/addon/ether-metamask/"
 print_header "📚 Step 7: Cloning Lab Repository"
 ################################################################################
 
-if [ -d "$LAB_DIR" ]; then
-    print_warning "Lab directory already exists: $LAB_DIR"
-    read -p "Delete and re-clone? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        rm -rf "$LAB_DIR"
+CLONE_REPO=false
+if sudo -u "$STUDENT_USER" test -d "$REPO_DIR"; then
+    print_warning "Repository directory already exists: $REPO_DIR"
+    if [ "$RECLONE_IF_EXISTS" = "true" ]; then
+        print_info "RECLONE_IF_EXISTS=true -> removing existing repository"
+        sudo rm -rf "$REPO_DIR" "$LAB_DIR"
         CLONE_REPO=true
+    else
+        print_info "Reusing existing repository (no re-clone prompt)"
+        CLONE_REPO=false
     fi
 else
     CLONE_REPO=true
@@ -242,47 +302,72 @@ fi
 
 if [ "$CLONE_REPO" = true ]; then
     print_info "Cloning repository from $REPO_URL..."
-    git clone "$REPO_URL" "$HOME/ase-cybersecurity"
-    
-    # Create symlink for easy access
-    ln -sf "$HOME/ase-cybersecurity/2026/lab4-blockchain-defi" "$LAB_DIR"
-    
-    print_success "Repository cloned to $HOME/ase-cybersecurity"
-    print_success "Symlink created: $LAB_DIR"
+    sudo -u "$STUDENT_USER" git clone "$REPO_URL" "$REPO_DIR"
+    print_success "Repository cloned to $REPO_DIR"
 fi
+
+LAB_SOURCE_DIR="$REPO_DIR/$LAB_REL_PATH"
+if ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
+    print_warning "Expected lab path not found: $LAB_SOURCE_DIR"
+    LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab4-blockchain-defi" | head -1)
+fi
+
+if [ -z "$LAB_SOURCE_DIR" ] || ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
+    print_warning "Lab directory is missing in repository"
+
+    if [ -n "$LOCAL_REPO_ROOT" ] && [ -d "$LOCAL_REPO_ROOT/$LAB_REL_PATH" ]; then
+        print_info "Using local repository fallback: $LOCAL_REPO_ROOT"
+        sudo rm -rf "$REPO_DIR"
+        sudo cp -a "$LOCAL_REPO_ROOT" "$REPO_DIR"
+        sudo chown -R "$STUDENT_USER:$STUDENT_USER" "$REPO_DIR"
+        LAB_SOURCE_DIR="$REPO_DIR/$LAB_REL_PATH"
+    fi
+fi
+
+if [ -z "$LAB_SOURCE_DIR" ] || ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
+    print_error "Could not locate lab directory inside cloned repository or local fallback"
+    print_info "Checked path: $REPO_DIR/$LAB_REL_PATH"
+    print_info "Configured repository URL: $REPO_URL"
+    exit 1
+fi
+
+# Create symlink for easy access in student home (always refresh)
+sudo -u "$STUDENT_USER" rm -rf "$LAB_DIR"
+sudo -u "$STUDENT_USER" ln -s "$LAB_SOURCE_DIR" "$LAB_DIR"
+
+if ! sudo -u "$STUDENT_USER" test -d "$LAB_DIR"; then
+    print_error "Lab symlink is invalid: $LAB_DIR -> $LAB_SOURCE_DIR"
+    exit 1
+fi
+
+print_success "Symlink created: $LAB_DIR"
 
 ################################################################################
 print_header "📦 Step 8: Installing NPM Dependencies"
 ################################################################################
 
-print_info "Installing npm dependencies (this may take a few minutes)..."
-cd "$LAB_DIR"
-
-npm install --silent
-
-if [ $? -eq 0 ]; then
-    print_success "NPM dependencies installed successfully"
-else
-    print_error "NPM installation failed"
-    exit 1
-fi
+print_info "Installing npm dependencies as '$STUDENT_USER' (this may take a few minutes)..."
+sudo -u "$STUDENT_USER" bash -lc "cd '$LAB_DIR' && npm install --silent"
+print_success "NPM dependencies installed successfully"
 
 ################################################################################
 print_header "🔧 Step 9: Running Setup Verification"
 ################################################################################
 
-print_info "Running setup verification script..."
-node scripts/verify-setup.js
+print_info "Running setup verification script as '$STUDENT_USER'..."
+sudo -u "$STUDENT_USER" bash -lc "cd '$LAB_DIR' && node scripts/verify-setup.js"
 
 ################################################################################
 print_header "🎨 Step 10: Creating Desktop Shortcuts"
 ################################################################################
 
-DESKTOP_DIR="$HOME/Desktop"
-mkdir -p "$DESKTOP_DIR"
+DESKTOP_DIR="$STUDENT_HOME/Desktop"
+AUTOSTART_DIR="$STUDENT_HOME/.config/autostart"
+sudo -u "$STUDENT_USER" mkdir -p "$DESKTOP_DIR"
+sudo -u "$STUDENT_USER" mkdir -p "$AUTOSTART_DIR"
 
 # Start Ganache shortcut
-cat > "$DESKTOP_DIR/Start-Ganache.desktop" << 'EOF'
+cat << 'EOF' | sudo tee "$DESKTOP_DIR/Start-Ganache.desktop" > /dev/null
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -294,10 +379,25 @@ Terminal=false
 Categories=Development;
 EOF
 
-chmod +x "$DESKTOP_DIR/Start-Ganache.desktop"
+sudo chmod +x "$DESKTOP_DIR/Start-Ganache.desktop"
+
+# Ganache GUI shortcut
+cat << 'EOF' | sudo tee "$DESKTOP_DIR/Open-Ganache-GUI.desktop" > /dev/null
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Open Ganache GUI
+Comment=Open Ganache desktop application
+Exec=ganache-gui
+Icon=applications-development
+Terminal=false
+Categories=Development;
+EOF
+
+sudo chmod +x "$DESKTOP_DIR/Open-Ganache-GUI.desktop"
 
 # VS Code Lab shortcut
-cat > "$DESKTOP_DIR/Open-Lab.desktop" << EOF
+cat << EOF | sudo tee "$DESKTOP_DIR/Open-Lab.desktop" > /dev/null
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -309,10 +409,10 @@ Terminal=false
 Categories=Development;
 EOF
 
-chmod +x "$DESKTOP_DIR/Open-Lab.desktop"
+sudo chmod +x "$DESKTOP_DIR/Open-Lab.desktop"
 
 # Lab README shortcut
-cat > "$DESKTOP_DIR/Lab-Instructions.desktop" << EOF
+cat << EOF | sudo tee "$DESKTOP_DIR/Lab-Instructions.desktop" > /dev/null
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -324,42 +424,34 @@ Terminal=false
 Categories=Education;
 EOF
 
-chmod +x "$DESKTOP_DIR/Lab-Instructions.desktop"
+sudo chmod +x "$DESKTOP_DIR/Lab-Instructions.desktop"
+cat << 'EOF' | sudo tee "$AUTOSTART_DIR/Ganache-Autostart.desktop" > /dev/null
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Ganache Autostart
+Comment=Start Ganache automatically for DeFi Heist Lab
+Exec=/bin/bash -lc "cd ~/lab4-blockchain-defi && LAB_AUTO_START=1 ./start-ganache.sh >> ~/ganache.log 2>&1"
+Terminal=false
+X-GNOME-Autostart-enabled=true
+Categories=Development;
+EOF
 
-print_success "Desktop shortcuts created"
+sudo chmod +x "$AUTOSTART_DIR/Ganache-Autostart.desktop"
+sudo chown -R "$STUDENT_USER:$STUDENT_USER" "$DESKTOP_DIR"
+sudo chown -R "$STUDENT_USER:$STUDENT_USER" "$AUTOSTART_DIR"
+
+print_success "Desktop shortcuts and Ganache autostart created"
 
 ################################################################################
-print_header "👤 Step 11: Creating Student User (Optional)"
+print_header "👤 Step 11: Student User Summary"
 ################################################################################
 
-if id "$STUDENT_USER" &>/dev/null; then
-    print_info "User '$STUDENT_USER' already exists"
-else
-    read -p "Create student user '$STUDENT_USER' with password '$STUDENT_PASS'? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        print_info "Creating user '$STUDENT_USER'..."
-        
-        sudo useradd -m -s /bin/bash "$STUDENT_USER"
-        echo "$STUDENT_USER:$STUDENT_PASS" | sudo chpasswd
-        sudo usermod -aG sudo "$STUDENT_USER"
-        
-        # Copy lab to student home
-        sudo cp -r "$HOME/ase-cybersecurity" "/home/$STUDENT_USER/"
-        sudo ln -sf "/home/$STUDENT_USER/ase-cybersecurity/2026/lab4-blockchain-defi" "/home/$STUDENT_USER/lab4-blockchain-defi"
-        sudo chown -R "$STUDENT_USER:$STUDENT_USER" "/home/$STUDENT_USER/ase-cybersecurity"
-        sudo chown -R "$STUDENT_USER:$STUDENT_USER" "/home/$STUDENT_USER/lab4-blockchain-defi"
-        
-        # Copy desktop shortcuts
-        sudo mkdir -p "/home/$STUDENT_USER/Desktop"
-        sudo cp "$DESKTOP_DIR"/*.desktop "/home/$STUDENT_USER/Desktop/"
-        sudo chown -R "$STUDENT_USER:$STUDENT_USER" "/home/$STUDENT_USER/Desktop"
-        
-        print_success "Student user created"
-        print_info "Username: $STUDENT_USER"
-        print_info "Password: $STUDENT_PASS"
-    fi
-fi
+print_success "Student user is configured"
+print_info "Username: $STUDENT_USER"
+print_info "Password: $STUDENT_PASS"
+print_info "Lab path: $LAB_DIR"
+print_info "Repository path: $REPO_DIR"
 
 ################################################################################
 print_header "🧹 Step 12: Cleanup and Optimization"
@@ -392,7 +484,8 @@ echo ""
 echo "📋 What was installed:"
 echo "  ✅ Node.js $(node --version)"
 echo "  ✅ NPM $(npm --version)"
-echo "  ✅ Ganache $(ganache --version 2>&1 | head -1)"
+echo "  ✅ Ganache CLI $(ganache --version 2>&1 | head -1)"
+echo "  ✅ Ganache GUI v${GANACHE_GUI_VERSION}"
 echo "  ✅ VS Code with Solidity extensions"
 echo "  ✅ Firefox browser"
 echo "  ✅ Lab repository and dependencies"
@@ -401,9 +494,12 @@ echo "📁 Lab location: $LAB_DIR"
 echo ""
 echo "🚀 Next steps:"
 echo "  1. Reboot the VM (recommended)"
-echo "  2. Double-click 'Start-Ganache' on Desktop"
-echo "  3. Double-click 'Open-Lab' to open VS Code"
-echo "  4. Read 'Lab-Instructions' to get started"
+echo "  2. Login as '$STUDENT_USER'"
+echo "  3. Run: npm run init:student -- --student-id <id>"
+echo "  4. Wait for next login autostart or run ./start-ganache.sh once"
+echo "  5. Optional: double-click 'Open-Ganache-GUI' for the desktop app"
+echo "  6. Double-click 'Open-Lab' to open VS Code"
+echo "  7. Read 'Lab-Instructions' to get started"
 echo ""
 echo "📖 Manual start commands:"
 echo "  cd ~/lab4-blockchain-defi"
@@ -416,7 +512,9 @@ echo ""
 echo "🦊 Don't forget to:"
 echo "  - Install MetaMask in Firefox"
 echo "  - Configure MetaMask for localhost:7545"
-echo "  - Import Ganache accounts (see vm-setup/README.md)"
+echo "  - Import only the primary Ganache account once per VM"
+echo "  - Check ~/ganache.log if you need the startup details"
+echo "  - Do not start a second Ganache workspace on port 7545 while CLI autostart is running"
 echo ""
 echo "📧 Support: lcretu@bitdefender.com"
 echo ""
