@@ -26,6 +26,8 @@ student/manifest.sig
 instructor/expected/
 instructor/grading/
 submissions/
+student/submissions/*
+!student/submissions/.gitkeep
 
 # Environment variables
 .env

@@ -5,14 +5,10 @@ const path = require("path");
 
 function parseArgs(argv) {
   const args = {
-    keepExpected: false,
     dryRun: false
   };
 
   argv.forEach((token) => {
-    if (token === "--keep-expected") {
-      args.keepExpected = true;
-    }
     if (token === "--dry-run") {
       args.dryRun = true;
     }
@@ -26,10 +22,9 @@ function parseArgs(argv) {
 
 function printHelp() {
   console.log(`Usage:
-  node scripts/clean-generated.js [--keep-expected] [--dry-run]
+  node scripts/clean-generated.js [--dry-run]
 
 Options:
-  --keep-expected   Keep instructor/expected/*.json files
   --dry-run         Print what would be removed without deleting
   --help            Show this message
 `);
@@ -81,9 +76,6 @@ function main() {
   const root = path.resolve(__dirname, "..");
 
   const directFiles = [
-    ".env.backup",
-    ".bash_history_fake",
-    ".secret_config.json",
     "challenge1-data.json",
     path.join("student", "instance.json"),
     path.join("student", "instance.env"),
@@ -104,14 +96,6 @@ function main() {
     (entry) => entry.endsWith(".json"),
     args.dryRun
   );
-
-  if (!args.keepExpected) {
-    removedCount += removeMatching(
-      path.join(root, "instructor", "expected"),
-      (entry) => entry.endsWith(".json"),
-      args.dryRun
-    );
-  }
 
   if (!removedCount) {
     console.log("No generated artifacts found.");

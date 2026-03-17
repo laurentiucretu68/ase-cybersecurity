@@ -1,224 +1,409 @@
-// Verification script to check if the environment is properly set up
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+const fs = require("fs");
+const path = require("path");
+const http = require("http");
+const { spawnSync } = require("child_process");
 
-console.log("🔍 Verifying DeFi Heist Lab Setup...\n");
-console.log("=".repeat(60));
+const DEFAULT_CHAIN_ID = 1337;
+const DEFAULT_PORT = 7545;
 
-let allGood = true;
-
-// Check Node.js version
-try {
-  const nodeVersion = process.version;
-  console.log(`✅ Node.js: ${nodeVersion}`);
-  
-  const major = parseInt(nodeVersion.split('.')[0].substring(1));
-  if (major < 16) {
-    console.log("⚠️  Warning: Node.js 16+ recommended");
-    allGood = false;
-  }
-} catch (error) {
-  console.log("❌ Node.js: Not found");
-  allGood = false;
+function resolveCommand(command) {
+  return process.platform === "win32" ? `${command}.cmd` : command;
 }
 
-// Check NPM
-try {
-  const npmVersion = execSync('npm --version', { encoding: 'utf-8' }).trim();
-  console.log(`✅ NPM: v${npmVersion}`);
-} catch (error) {
-  console.log("❌ NPM: Not found");
-  allGood = false;
-}
+function runCommand(command, args = []) {
+  const result = spawnSync(command, args, {
+    encoding: "utf8"
+  });
 
-// Check Hardhat
-try {
-  const hardhatVersion = execSync('npx hardhat --version', { encoding: 'utf-8' }).trim();
-  console.log(`✅ Hardhat: ${hardhatVersion}`);
-} catch (error) {
-  console.log("❌ Hardhat: Not installed (run: npm install)");
-  allGood = false;
-}
-
-// Check Ganache
-try {
-  const ganacheVersion = execSync('ganache --version', { encoding: 'utf-8' }).trim();
-  console.log(`✅ Ganache: ${ganacheVersion}`);
-} catch (error) {
-  console.log("⚠️  Ganache CLI: Not installed globally (install: npm install -g ganache)");
-  console.log("   (Can still use with: npx ganache)");
-}
-
-// Check if Ganache is running
-try {
-  const http = require('http');
-  const options = {
-    hostname: 'localhost',
-    port: 7545,
-    path: '/',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    }
+  return {
+    ok: !result.error && result.status === 0,
+    stdout: result.stdout || "",
+    stderr: result.stderr || "",
+    error: result.error
   };
-  
-  // Try to make a request to Ganache
-  console.log("🔌 Checking Ganache connection...");
-  // Note: This is async, so we'll mark it as optional
-  console.log("⚠️  Ganache: Not running (start with: ./start-ganache.sh)");
-} catch (error) {
-  console.log("⚠️  Ganache: Cannot verify (start with: ./start-ganache.sh)");
 }
 
-// Check Git
-try {
-  const gitVersion = execSync('git --version', { encoding: 'utf-8' }).trim();
-  console.log(`✅ Git: ${gitVersion}`);
-} catch (error) {
-  console.log("❌ Git: Not found");
-  allGood = false;
+function parseEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return {};
+  }
+
+  const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/);
+  const env = {};
+
+  lines.forEach((line) => {
+    if (!line || line.trim().startsWith("#")) {
+      return;
+    }
+
+    const separatorIndex = line.indexOf("=");
+    if (separatorIndex === -1) {
+      return;
+    }
+
+    const key = line.slice(0, separatorIndex).trim();
+    const value = line.slice(separatorIndex + 1).trim();
+    env[key] = value;
+  });
+
+  return env;
 }
 
-console.log("\n" + "=".repeat(60));
-console.log("📁 Checking project structure...\n");
-
-// Check directories
-const requiredDirs = [
-  'contracts',
-  'scripts',
-  'challenges',
-  'vm-setup',
-  'deployments'
-];
-
-requiredDirs.forEach(dir => {
-  if (fs.existsSync(dir)) {
-    console.log(`✅ Directory: ${dir}/`);
-  } else {
-    console.log(`❌ Directory missing: ${dir}/`);
-    allGood = false;
+function parsePositiveInt(value, fallback) {
+  if (value === undefined || value === null || value === "") {
+    return fallback;
   }
-});
 
-// Check important files
-const requiredFiles = [
-  'package.json',
-  'hardhat.config.js',
-  'start-ganache.sh',
-  'README.md',
-  'scripts/generate-instance.js',
-  'scripts/generate-batch-instances.js',
-  'scripts/clean-generated.js',
-  'scripts/grade-submissions.js',
-  'scripts/setup-challenge1.js',
-  'scripts/inspect-transaction.js',
-  'scripts/trace-funds.js',
-  'scripts/find-private-key.sh',
-  'test/test-access-control.js',
-  'instructor/students.example.txt'
-];
-
-console.log();
-requiredFiles.forEach(file => {
-  if (fs.existsSync(file)) {
-    console.log(`✅ File: ${file}`);
-  } else {
-    console.log(`❌ File missing: ${file}`);
-    allGood = false;
-  }
-});
-
-console.log();
-if (fs.existsSync('student/instance.json')) {
-  console.log('✅ student/instance.json - Per-student instance found');
-} else {
-  console.log('⚠️  student/instance.json - Missing per-student instance');
-  console.log('   Run before deploy: npm run init:student -- --student-id <id>');
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-// Check contracts
-console.log("\n" + "=".repeat(60));
-console.log("📄 Checking contract files...\n");
+function formatHeader(title) {
+  console.log(`\n${"=".repeat(60)}`);
+  console.log(title);
+  console.log();
+}
 
-const contractFiles = [
-  'contracts/SimpleVault.sol',
-  'contracts/VaultAttacker.sol',
-  'contracts/AdminVault.sol'
-];
+function extractVersionLine(output, matcher) {
+  return output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => matcher.test(line));
+}
 
-contractFiles.forEach(file => {
-  if (fs.existsSync(file)) {
-    console.log(`✅ ${file}`);
-  } else {
-    console.log(`❌ Missing: ${file}`);
+function rpcRequest(port, method, params = []) {
+  const payload = JSON.stringify({
+    jsonrpc: "2.0",
+    id: 1,
+    method,
+    params
+  });
+
+  return new Promise((resolve, reject) => {
+    const request = http.request(
+      {
+        hostname: "127.0.0.1",
+        port,
+        path: "/",
+        method: "POST",
+        timeout: 2500,
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(payload)
+        }
+      },
+      (response) => {
+        let body = "";
+
+        response.on("data", (chunk) => {
+          body += chunk;
+        });
+
+        response.on("end", () => {
+          try {
+            const parsed = JSON.parse(body);
+
+            if (parsed.error) {
+              reject(new Error(parsed.error.message || "Unknown JSON-RPC error"));
+              return;
+            }
+
+            resolve(parsed.result);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+    );
+
+    request.on("timeout", () => {
+      request.destroy(new Error("Request timed out"));
+    });
+
+    request.on("error", reject);
+    request.write(payload);
+    request.end();
+  });
+}
+
+async function checkGanacheConnection(port, expectedChainId) {
+  try {
+    const chainIdHex = await rpcRequest(port, "eth_chainId");
+    const accounts = await rpcRequest(port, "eth_accounts");
+    const chainId = Number.parseInt(chainIdHex, 16);
+
+    return {
+      running: true,
+      chainId,
+      accountCount: Array.isArray(accounts) ? accounts.length : 0,
+      matchesExpectedChain: chainId === expectedChainId
+    };
+  } catch (error) {
+    return {
+      running: false,
+      error: error.message
+    };
+  }
+}
+
+async function main() {
+  console.log("Verifying DeFi Heist Lab Setup...\n");
+  console.log("=".repeat(60));
+
+  let allGood = true;
+
+  const instanceEnv = parseEnvFile(path.join("student", "instance.env"));
+  const expectedPort = parsePositiveInt(instanceEnv.LAB_PORT, DEFAULT_PORT);
+  const expectedChainId = parsePositiveInt(instanceEnv.LAB_CHAIN_ID, DEFAULT_CHAIN_ID);
+
+  try {
+    const nodeVersion = process.version;
+    console.log(`[OK] Node.js: ${nodeVersion}`);
+
+    const major = Number.parseInt(nodeVersion.split(".")[0].slice(1), 10);
+    if (major < 16) {
+      console.log("[WARN] Node.js 16+ recommended");
+      allGood = false;
+    }
+  } catch (_error) {
+    console.log("[FAIL] Node.js: Not found");
     allGood = false;
   }
-});
 
-// Check challenge docs
-console.log("\n" + "=".repeat(60));
-console.log("📚 Checking challenge documentation...\n");
-
-const challengeDocs = [
-  'challenges/challenge1-forensics.md',
-  'challenges/challenge2-reentrancy.md',
-  'challenges/challenge3-access-control.md'
-];
-
-challengeDocs.forEach(file => {
-  if (fs.existsSync(file)) {
-    console.log(`✅ ${file}`);
+  const npmResult = runCommand(resolveCommand("npm"), ["--version"]);
+  if (npmResult.ok) {
+    console.log(`[OK] NPM: v${npmResult.stdout.trim()}`);
   } else {
-    console.log(`❌ Missing: ${file}`);
+    console.log("[FAIL] NPM: Not found");
     allGood = false;
   }
-});
 
-// Check if node_modules exists
-console.log("\n" + "=".repeat(60));
-console.log("📦 Checking dependencies...\n");
+  const hardhatResult = runCommand(resolveCommand("npx"), ["hardhat", "--version"]);
+  if (hardhatResult.ok) {
+    console.log(`[OK] Hardhat: ${hardhatResult.stdout.trim()}`);
+  } else {
+    console.log("[FAIL] Hardhat: Not installed (run: npm install)");
+    allGood = false;
+  }
 
-if (fs.existsSync('node_modules')) {
-  console.log("✅ node_modules/ - Dependencies installed");
-  
-  // Check key dependencies
-  const keyDeps = ['hardhat', 'ethers', '@openzeppelin/contracts'];
-  keyDeps.forEach(dep => {
-    const depPath = path.join('node_modules', dep);
-    if (fs.existsSync(depPath)) {
-      console.log(`  ✅ ${dep}`);
+  const ganacheResult = runCommand("ganache", ["--version"]);
+  if (ganacheResult.ok) {
+    const combinedOutput = `${ganacheResult.stdout}\n${ganacheResult.stderr}`;
+    const ganacheVersion =
+      extractVersionLine(combinedOutput, /^ganache v/i) || "Ganache installed";
+    console.log(`[OK] Ganache: ${ganacheVersion}`);
+  } else {
+    console.log("[WARN] Ganache CLI: Not installed globally (install: npm install -g ganache)");
+    console.log("       Can still use with: npx ganache");
+  }
+
+  console.log("Checking Ganache connection...");
+  const ganacheStatus = await checkGanacheConnection(expectedPort, expectedChainId);
+  if (ganacheStatus.running) {
+    const chainLabel = ganacheStatus.matchesExpectedChain
+      ? `${ganacheStatus.chainId}`
+      : `${ganacheStatus.chainId} (expected ${expectedChainId})`;
+    console.log(
+      `[OK] Ganache RPC: Running on http://127.0.0.1:${expectedPort} | chainId ${chainLabel} | visible accounts ${ganacheStatus.accountCount}`
+    );
+  } else {
+    console.log(`[WARN] Ganache RPC: Not reachable on http://127.0.0.1:${expectedPort}`);
+    console.log("       Start with: ./start-ganache.sh");
+  }
+
+  const gitResult = runCommand("git", ["--version"]);
+  if (gitResult.ok) {
+    console.log(`[OK] Git: ${gitResult.stdout.trim()}`);
+  } else {
+    console.log("[FAIL] Git: Not found");
+    allGood = false;
+  }
+
+  formatHeader("Checking project structure...");
+
+  const requiredDirs = ["contracts", "scripts", "challenges", "vm-setup", "deployments"];
+  requiredDirs.forEach((dir) => {
+    if (fs.existsSync(dir)) {
+      console.log(`[OK] Directory: ${dir}/`);
     } else {
-      console.log(`  ❌ ${dep} - Missing`);
+      console.log(`[FAIL] Directory missing: ${dir}/`);
       allGood = false;
     }
   });
-} else {
-  console.log("❌ node_modules/ - Dependencies not installed");
-  console.log("   Run: npm install");
-  allGood = false;
+
+  const requiredFiles = [
+    "package.json",
+    "hardhat.config.js",
+    "start-ganache.sh",
+    "README.md",
+    "scripts/generate-instance.js",
+    "scripts/clean-generated.js",
+    "scripts/setup-challenge1.js",
+    "scripts/deploy-simple-vault.js",
+    "scripts/configure-ganache-gui.js",
+    "scripts/validate-results-format.js",
+    "scripts/lib/instance-config.js",
+    "scripts/inspect-transaction.js",
+    "scripts/trace-funds.js"
+  ];
+
+  console.log();
+  requiredFiles.forEach((file) => {
+    if (fs.existsSync(file)) {
+      console.log(`[OK] File: ${file}`);
+    } else {
+      console.log(`[FAIL] File missing: ${file}`);
+      allGood = false;
+    }
+  });
+
+  const instanceFiles = [
+    "student/instance.json",
+    "student/instance.env",
+    "student/manifest.sig"
+  ];
+  const instanceReady = instanceFiles.every((file) => fs.existsSync(file));
+
+  console.log();
+  instanceFiles.forEach((file) => {
+    if (fs.existsSync(file)) {
+      console.log(`[OK] ${file}`);
+    } else {
+      console.log(`[WARN] Missing: ${file}`);
+    }
+  });
+
+  if (!instanceReady) {
+    console.log("       Run before deploy: npm run init:student -- --student-id <id>");
+  }
+
+  formatHeader("Checking contract files...");
+
+  const contractFiles = [
+    "contracts/SimpleVault.sol",
+    "contracts/VaultAttacker.sol"
+  ];
+
+  contractFiles.forEach((file) => {
+    if (fs.existsSync(file)) {
+      console.log(`[OK] ${file}`);
+    } else {
+      console.log(`[FAIL] Missing: ${file}`);
+      allGood = false;
+    }
+  });
+
+  formatHeader("Checking challenge documentation...");
+
+  const challengeDocs = [
+    "challenges/challenge1-forensics.md",
+    "challenges/challenge2-reentrancy.md"
+  ];
+
+  challengeDocs.forEach((file) => {
+    if (fs.existsSync(file)) {
+      console.log(`[OK] ${file}`);
+    } else {
+      console.log(`[FAIL] Missing: ${file}`);
+      allGood = false;
+    }
+  });
+
+  formatHeader("Checking dependencies...");
+
+  if (fs.existsSync("node_modules")) {
+    console.log("[OK] node_modules/ - Dependencies installed");
+
+    ["hardhat", "ethers", "@openzeppelin/contracts", "dotenv"].forEach((dependency) => {
+      const dependencyPath = path.join("node_modules", dependency);
+      if (fs.existsSync(dependencyPath)) {
+        console.log(`  [OK] ${dependency}`);
+      } else {
+        console.log(`  [FAIL] ${dependency} - Missing`);
+        allGood = false;
+      }
+    });
+  } else {
+    console.log("[FAIL] node_modules/ - Dependencies not installed");
+    console.log("       Run: npm install");
+    allGood = false;
+  }
+
+  formatHeader("Checking generated artifacts...");
+
+  const deploymentFiles = [
+    {
+      file: "deployments/challenge1-data.json",
+      label: "Challenge 1 deployment"
+    },
+    {
+      file: "deployments/simple-vault.json",
+      label: "Challenge 2 deployment"
+    }
+  ];
+
+  const deploymentsReady = deploymentFiles.every((item) => fs.existsSync(item.file));
+
+  deploymentFiles.forEach(({ file, label }) => {
+    if (fs.existsSync(file)) {
+      console.log(`[OK] ${label}: ${file}`);
+    } else {
+      console.log(`[WARN] Missing ${label}: ${file}`);
+    }
+  });
+
+  const runtimeReady = instanceReady && ganacheStatus.running && deploymentsReady;
+  const headerTitle = allGood
+    ? runtimeReady
+      ? "Setup verification PASSED!"
+      : "Setup verification PARTIAL"
+    : "Setup verification INCOMPLETE";
+
+  formatHeader(headerTitle);
+
+  if (allGood) {
+    if (runtimeReady) {
+      console.log("Environment is ready and deployments are already in place.");
+      console.log("\nNext steps:");
+      console.log("1. Open Challenge 1: challenges/challenge1-forensics.md");
+      console.log("2. Use deployments/challenge1-data.json for the initial transaction hash.");
+      console.log("3. Continue with Challenge 2: challenges/challenge2-reentrancy.md");
+      console.log("4. Open VS Code if needed: code .");
+    } else {
+      console.log("Core environment looks good, but the lab runtime is not fully ready yet.");
+      console.log("\nNext steps:");
+
+      let step = 1;
+      if (!instanceReady) {
+        console.log(`${step}. Generate student instance: npm run init:student -- --student-id <id>`);
+        step += 1;
+      }
+      if (!ganacheStatus.running) {
+        console.log(`${step}. Start Ganache: ./start-ganache.sh`);
+        step += 1;
+      }
+      if (!deploymentsReady) {
+        console.log(`${step}. Deploy contracts: npm run deploy:all`);
+        step += 1;
+      }
+
+      console.log(`${step}. Open VS Code: code .`);
+      console.log(`${step + 1}. Start with Challenge 1: challenges/challenge1-forensics.md`);
+    }
+  } else {
+    console.log("Please fix the issues above before starting the lab.");
+    console.log("\nCommon fixes:");
+    console.log("- Run: npm install");
+    console.log("- Run: npm run init:student -- --student-id <id>");
+    console.log("- Start Ganache: ./start-ganache.sh");
+    console.log("- Ensure you're in the lab4-blockchain-defi directory");
+  }
+
+  console.log("=".repeat(60));
+  process.exit(allGood ? 0 : 1);
 }
 
-// Final summary
-console.log("\n" + "=".repeat(60));
-if (allGood) {
-  console.log("✅ Setup verification PASSED!");
-  console.log("\n🚀 You're ready to start the lab!");
-  console.log("\nNext steps:");
-  console.log("1. Generate student instance: npm run init:student -- --student-id <id>");
-  console.log("2. Start Ganache: ./start-ganache.sh");
-  console.log("3. Deploy contracts: npm run deploy:all");
-  console.log("4. Open VS Code: code .");
-  console.log("5. Start with Challenge 1: challenges/challenge1-forensics.md");
-} else {
-  console.log("⚠️  Setup verification INCOMPLETE");
-  console.log("\n🔧 Please fix the issues above before starting the lab.");
-  console.log("\nCommon fixes:");
-  console.log("- Run: npm install");
-  console.log("- Run: npm run init:student -- --student-id <id>");
-  console.log("- Install Ganache: npm install -g ganache");
-  console.log("- Ensure you're in the lab4-blockchain-defi directory");
-}
-console.log("=".repeat(60));
-
-process.exit(allGood ? 0 : 1);
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
