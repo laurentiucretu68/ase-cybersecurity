@@ -48,8 +48,12 @@ function createWorkspaceSettings({
   port,
   defaultBalanceEth,
   gasPriceWei,
-  gasLimit
+  gasLimit,
+  databasePath
 }) {
+  const numericDefaultBalance = Number(defaultBalanceEth);
+  const numericGasPriceWei = Number(gasPriceWei);
+
   return {
     name,
     flavor: "ethereum",
@@ -76,7 +80,29 @@ function createWorkspaceSettings({
       hardfork: DEFAULT_GUI_HARDFORK,
       fork: null,
       fork_block_number: null,
-      mnemonic
+      mnemonic,
+      chain: {
+        chainId,
+        networkId: chainId,
+        hardfork: DEFAULT_GUI_HARDFORK,
+        vmErrorsOnRPCResponse: true
+      },
+      database: {
+        dbPath: databasePath
+      },
+      logging: {
+        verbose: false
+      },
+      miner: {
+        defaultGasPrice: numericGasPriceWei,
+        blockGasLimit: gasLimit,
+        instamine: "eager"
+      },
+      wallet: {
+        mnemonic,
+        totalAccounts: visibleAccounts,
+        defaultBalance: numericDefaultBalance
+      }
     }
   };
 }
@@ -143,7 +169,8 @@ function main() {
     createWorkspaceSettings({
       ...sharedSettings,
       name: "Quickstart",
-      isDefault: true
+      isDefault: true,
+      databasePath: defaultChaindataDir
     })
   );
 
@@ -152,7 +179,8 @@ function main() {
     createWorkspaceSettings({
       ...sharedSettings,
       name: DEFAULT_WORKSPACE_NAME,
-      isDefault: false
+      isDefault: false,
+      databasePath: namedChaindataDir
     })
   );
 

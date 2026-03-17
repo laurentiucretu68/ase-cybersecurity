@@ -45,6 +45,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 REPO_URL="https://github.com/laurentiucretu68/ase-cybersecurity.git"  # UPDATE THIS!
+REPO_BRANCH="beta"  # Branch to clone for lab4
 NODE_MAJOR="20"
 RECLONE_IF_EXISTS="false"
 STUDENT_USER="student"
@@ -60,6 +61,7 @@ GANACHE_GUI_ASSET="ganache-2.7.1-linux-x86_64.AppImage"
 GANACHE_GUI_URL="https://github.com/ConsenSys-archive/ganache-ui/releases/download/v${GANACHE_GUI_VERSION}/${GANACHE_GUI_ASSET}"
 GANACHE_GUI_DIR="/opt/ganache-ui"
 GANACHE_GUI_APPIMAGE="$GANACHE_GUI_DIR/$GANACHE_GUI_ASSET"
+GANACHE_GUI_APP_BIN="/usr/local/bin/ganache-gui-app"
 GANACHE_GUI_BIN="/usr/local/bin/ganache-gui"
 
 ################################################################################
@@ -225,14 +227,34 @@ sudo mkdir -p "$GANACHE_GUI_DIR"
 sudo wget -q -O "$GANACHE_GUI_APPIMAGE" "$GANACHE_GUI_URL"
 sudo chmod +x "$GANACHE_GUI_APPIMAGE"
 
-cat << EOF | sudo tee "$GANACHE_GUI_BIN" > /dev/null
+cat << EOF | sudo tee "$GANACHE_GUI_APP_BIN" > /dev/null
 #!/bin/bash
 exec "$GANACHE_GUI_APPIMAGE" --no-sandbox "\$@"
 EOF
 
+sudo chmod +x "$GANACHE_GUI_APP_BIN"
+
+cat << 'EOF' | sudo tee "$GANACHE_GUI_BIN" > /dev/null
+#!/bin/bash
+
+if [ "${LAB_INTERNAL_GANACHE_GUI_LAUNCH:-0}" = "1" ]; then
+    exec /usr/local/bin/ganache-gui-app "$@"
+fi
+
+if [ -d "$HOME/lab4-blockchain-defi" ]; then
+    exec /bin/bash -lc "cd ~/lab4-blockchain-defi && ./start-ganache.sh"
+fi
+
+if [ -d "$HOME/ase-cybersecurity/2026/lab4-blockchain-defi" ]; then
+    exec /bin/bash -lc "cd ~/ase-cybersecurity/2026/lab4-blockchain-defi && ./start-ganache.sh"
+fi
+
+exec /usr/local/bin/ganache-gui-app "$@"
+EOF
+
 sudo chmod +x "$GANACHE_GUI_BIN"
 
-if [ -x "$GANACHE_GUI_BIN" ]; then
+if [ -x "$GANACHE_GUI_BIN" ] && [ -x "$GANACHE_GUI_APP_BIN" ]; then
     print_success "Ganache GUI installed at $GANACHE_GUI_BIN"
 else
     print_error "Ganache GUI installation failed"
@@ -289,6 +311,13 @@ print_header "📚 Step 7: Cloning Lab Repository"
 CLONE_REPO=false
 if sudo -u "$STUDENT_USER" test -d "$REPO_DIR"; then
     print_warning "Repository directory already exists: $REPO_DIR"
+    CURRENT_REPO_BRANCH=$(sudo -u "$STUDENT_USER" git -C "$REPO_DIR" branch --show-current 2>/dev/null || true)
+    if [ -n "$CURRENT_REPO_BRANCH" ]; then
+        print_info "Existing repository branch: $CURRENT_REPO_BRANCH"
+        if [ "$CURRENT_REPO_BRANCH" != "$REPO_BRANCH" ]; then
+            print_warning "Configured branch is '$REPO_BRANCH', but existing repo is on '$CURRENT_REPO_BRANCH'"
+        fi
+    fi
     if [ "$RECLONE_IF_EXISTS" = "true" ]; then
         print_info "RECLONE_IF_EXISTS=true -> removing existing repository"
         sudo rm -rf "$REPO_DIR" "$LAB_DIR"
@@ -302,8 +331,8 @@ else
 fi
 
 if [ "$CLONE_REPO" = true ]; then
-    print_info "Cloning repository from $REPO_URL..."
-    sudo -u "$STUDENT_USER" git clone "$REPO_URL" "$REPO_DIR"
+    print_info "Cloning repository from $REPO_URL (branch: $REPO_BRANCH)..."
+    sudo -u "$STUDENT_USER" git clone --branch "$REPO_BRANCH" --single-branch "$REPO_URL" "$REPO_DIR"
     print_success "Repository cloned to $REPO_DIR"
 fi
 
@@ -453,6 +482,7 @@ print_info "Username: $STUDENT_USER"
 print_info "Password: $STUDENT_PASS"
 print_info "Lab path: $LAB_DIR"
 print_info "Repository path: $REPO_DIR"
+print_info "Repository branch: $REPO_BRANCH"
 
 ################################################################################
 print_header "🧹 Step 12: Cleanup and Optimization"

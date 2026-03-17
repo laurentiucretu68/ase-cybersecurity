@@ -5,7 +5,7 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTANCE_ENV="$PROJECT_DIR/student/instance.env"
 STUDENT_DIR="$PROJECT_DIR/student"
-GANACHE_GUI_PROCESS_PATTERN='ganache-gui|ganache-[0-9.]+-linux-x86_64\.AppImage'
+GANACHE_GUI_PROCESS_PATTERN='ganache-gui|ganache-gui-app|ganache-[0-9.]+-linux-x86_64\.AppImage'
 
 # Defaults for local development.
 LAB_CHAIN_ID="${LAB_CHAIN_ID:-1337}"
@@ -46,10 +46,14 @@ ganache_gui_is_running() {
   pgrep -f "$GANACHE_GUI_PROCESS_PATTERN" >/dev/null 2>&1
 }
 
+ganache_gui_command_exists() {
+  command -v ganache-gui-app >/dev/null 2>&1 || command -v ganache-gui >/dev/null 2>&1
+}
+
 resolve_ganache_mode() {
   case "$LAB_GANACHE_MODE" in
     gui)
-      if command -v ganache-gui >/dev/null 2>&1 && [[ -n "${DISPLAY:-}" ]]; then
+      if ganache_gui_command_exists && [[ -n "${DISPLAY:-}" ]]; then
         echo "gui"
       else
         echo "error"
@@ -59,7 +63,7 @@ resolve_ganache_mode() {
       echo "cli"
       ;;
     auto)
-      if command -v ganache-gui >/dev/null 2>&1 && [[ -n "${DISPLAY:-}" ]]; then
+      if ganache_gui_command_exists && [[ -n "${DISPLAY:-}" ]]; then
         echo "gui"
       else
         echo "cli"
@@ -148,13 +152,15 @@ auto_open_ganache_quickstart() {
 start_ganache_gui() {
   local launched_gui=0
 
-  prepare_ganache_gui_profile
-
   if ganache_gui_is_running; then
     echo "Ganache GUI is already running"
   else
     echo "Launching Ganache GUI..."
-    nohup ganache-gui >/dev/null 2>&1 &
+    if command -v ganache-gui-app >/dev/null 2>&1; then
+      nohup ganache-gui-app >/dev/null 2>&1 &
+    else
+      nohup env LAB_INTERNAL_GANACHE_GUI_LAUNCH=1 ganache-gui >/dev/null 2>&1 &
+    fi
     launched_gui=1
     sleep 1
   fi
@@ -228,7 +234,7 @@ mkdir -p "$STUDENT_DIR"
 
 GANACHE_MODE="$(resolve_ganache_mode)"
 if [[ "$GANACHE_MODE" == "error" ]]; then
-  echo "Ganache GUI mode was requested, but ganache-gui or DISPLAY is unavailable"
+  echo "Ganache GUI mode was requested, but ganache-gui/ganache-gui-app or DISPLAY is unavailable"
   echo "Use one of:"
   echo "  ./start-ganache.sh                 # auto mode"
   echo "  LAB_GANACHE_MODE=cli ./start-ganache.sh"
@@ -237,8 +243,15 @@ fi
 
 print_start_summary "$GANACHE_MODE"
 
+if [[ "$GANACHE_MODE" == "gui" ]]; then
+  prepare_ganache_gui_profile
+fi
+
 if port_is_busy; then
   echo "Ganache is already running on port $LAB_PORT"
+  if [[ "$GANACHE_MODE" == "gui" ]]; then
+    echo "Ganache GUI profile was refreshed. Restart the running Ganache process to apply the new GUI account settings."
+  fi
   if [[ "$LAB_AUTO_START" == "1" ]]; then
     echo "Autostart mode detected, keeping the existing Ganache process"
     exit 0
