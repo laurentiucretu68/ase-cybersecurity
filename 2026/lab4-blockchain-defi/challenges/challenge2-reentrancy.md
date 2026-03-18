@@ -202,32 +202,17 @@ Dacă vezi `[OK] Challenge 2` — ai terminat.
 
 ---
 
-## Întrebări (6 x ~8p = 50p)
+## Întrebări (5 x 10p = 50p)
 
-### Q1 (10p) — Ce tip de vulnerabilitate este aceasta?
+### Q1 (10p) — Ce pattern de remediere propui?
 
-Răspuns: un singur cuvânt, lowercase. Numele vulnerabilității despre care ai citit în documentație — cea care permite reapelarea unei funcții înainte ca starea să fie actualizată.
+### Q2 (10p) — Adresa vault-ului
 
-### Q2 (10p) — Ce pattern de remediere propui?
+### Q3 (10p) — Balanța inițială a vault-ului
 
-Răspuns: trei cuvinte separate cu cratime, lowercase. Gândește-te la ordinea corectă: verificare → actualizare → interacțiune. Poți compara `SimpleVault` (vulnerabil) cu `SimpleVaultSecure` (reparat) din același fișier.
+### Q4 (10p) — Adresa contractului atacator
 
-### Q3 (8p) — Adresa vault-ului
-
-O iei din output-ul `npm run attack` (linia `Q3`) sau din `deployments/simple-vault.json`, câmpul `contractAddress`.
-
-### Q4 (8p) — Balanța inițială a vault-ului
-
-O iei din output-ul `npm run attack` (linia `Q4`). Format: `X.XXXX` (4 zecimale).
-
-### Q5 (7p) — Adresa contractului atacator
-
-O iei din output-ul `npm run attack` (linia `Q5`).
-
-### Q6 (7p) — Soldul final al vault-ului după atac
-
-O iei din output-ul `npm run attack` (linia `Q6`). Format: `X.XXXX`.
-
+### Q5 (10p) — Soldul final al vault-ului după atac
 ---
 
 ## Reguli de format
