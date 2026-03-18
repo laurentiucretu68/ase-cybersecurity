@@ -35,19 +35,29 @@ function loadAttackResults() {
   return attackData;
 }
 
-function buildChallenge2Result(instance, attackData, q1Token, q2Token) {
+function resolvePatchCode(instance) {
+  const patchCode =
+    instance &&
+    instance.challenge2 &&
+    instance.challenge2.contractPatchCode !== undefined
+      ? instance.challenge2.contractPatchCode
+      : 0;
+
+  return String(patchCode);
+}
+
+function buildChallenge2Result(instance, attackData) {
   return {
     challenge: "challenge2-reentrancy",
     studentId: instance.studentId,
     instanceId: instance.instanceId,
     answers: {
-      q1VulnerabilityPattern: q1Token,
-      q2RemediationPattern: q2Token,
-      q3VaultAddress: attackData.vaultAddress,
-      q4InitialVaultBalanceEth: attackData.initialVaultBalanceEth,
-      q5AttackerContractAddress: attackData.attackerAddress,
-      q6FinalVaultBalanceEth: attackData.finalVaultBalanceEth,
-      q7AttackGasFeeEth: attackData.attackGasFeeEth
+      q1VaultAddress: attackData.vaultAddress,
+      q2InitialVaultBalanceEth: attackData.initialVaultBalanceEth,
+      q3AttackerContractAddress: attackData.attackerAddress,
+      q4FinalVaultBalanceEth: attackData.finalVaultBalanceEth,
+      q5AttackGasFeeEth: attackData.attackGasFeeEth,
+      q6ContractPatchCode: resolvePatchCode(instance)
     }
   };
 }

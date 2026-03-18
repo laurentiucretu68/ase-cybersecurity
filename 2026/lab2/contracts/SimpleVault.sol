@@ -14,8 +14,11 @@ contract SimpleVault {
     // Evidenta interna a depozitelor totale.
     uint256 public totalDeposits;
 
-    // Q7: daca este activ, retragerile folosesc ordinea CEI (effects inainte de interaction).
+    // Daca este activ, retragerile folosesc ordinea CEI (effects inainte de interaction).
     bool public challenge2SecureMode = false;
+
+    uint256 public challenge2PatchCode = 0;
+    uint256 public challenge2PatchChecksum = 0;
 
     event Deposit(address indexed user, uint256 amount);
     event Withdrawal(address indexed user, uint256 amount);

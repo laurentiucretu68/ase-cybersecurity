@@ -28,8 +28,6 @@ Datele reale ale scenariului tău sunt în `deployments/challenge1-data.json`.
 2. Să calculezi **costurile reale de tranzacționare** (gas fees) pentru întregul lanț.
 3. Să extragi date utile din câmpul `input` al tranzacției inițiale și să **decodezi mesajul ascuns** din hex în text.
 
-Deși livrabilul final este un JSON, analiza intermediară trebuie făcută în Ganache GUI și pe datele on-chain.
-
 ---
 
 ## Concepte necesare
@@ -84,17 +82,13 @@ Formula:
 feeWei = gasUsed × gasPrice
 ```
 
-Ambele valori sunt vizibile în Ganache GUI sau obtenabile prin script. `totalGasFeeWei` este suma fee-urilor pentru **toate hop-urile** din lanț.
+`totalGasFeeWei` este suma fee-urilor pentru **toate hop-urile** din lanț.
 
 Exemplu: dacă `gasUsed = 21000` și `gasPrice = 20000000000` (20 Gwei):
 
 ```
 feeWei = 21000 × 20000000000 = 420000000000000 Wei = 0.00042 ETH
 ```
-
-### Notă despre timestamp
-
-Timestamp-urile (format Unix) pot fi analizate în Ganache pornind din `MINED IN BLOCK` al tranzacției și apoi deschizând blocul în tab-ul **BLOCKS**.
 
 ### Cum decodezi mesajul din câmpul `input`
 
@@ -147,39 +141,36 @@ Verifică în Ganache GUI:
 3. Conturile sunt vizibile
 4. Workspace: `Quickstart` sau `BLOCKCHAIN-DEFI`
 
-## Scripturi helper (optional)
+## Scripturi helper
 
 Pe langa analiza manuala in Ganache GUI, poti folosi si scripturile din `scripts/challenge1`:
 
 ```bash
 npm run c1:calc:gas
 npm run c1:calc:time
-npm run c1:results
 ```
 
 Ce fac:
 - `c1:calc:gas` calculeaza `totalGasFeeWei` pentru toate hop-urile.
 - `c1:calc:time` calculeaza diferenta de timp dintre primul si ultimul hop.
-- `c1:results` genereaza automat `student/submissions/challenge1-results.json`.
 
 Le poti folosi pentru verificare sau pentru generare rapida a JSON-ului final.
 
 ---
 
-## Întrebări cu răspuns exact (50p)
+## Date ce trebuie livrate (50p)
 
 ### 1. `initialTransactionHash`
-Hash-ul tranzacției de start a scenariului. Îl iei direct din `deployments/challenge1-data.json` — este punctul de pornire al investigației.
+Hash-ul tranzacției de start a scenariului.
 
-### 2. `hopTransactionHashes` (listă în ordine)
+### 2. `hopTransactionHashes`
 Toate hash-urile tranzacțiilor prin care trec fondurile, în ordinea reală a transferurilor, de la primul hop până la ultimul. Include și tranzacția inițială.
 
 ### 3. `firstDestinationAddress`
-Prima adresă `to` care primește fonduri din tranzacția inițială. Este adresa destinatarului din hop-ul 1.
+Prima adresă `to` care primește fonduri din tranzacția inițială.
 
 ### 4. `intermediateHopCount`
 Numărul de hop-uri **intermediare** dintre prima destinație și adresa finală.  
-Nu include tranzacția inițială și nu include destinația finală.
 
 Exemplu cu 4 hop-uri totale (A→B→C→D→E):
 - `firstDestinationAddress` = B
@@ -187,24 +178,16 @@ Exemplu cu 4 hop-uri totale (A→B→C→D→E):
 - hop-uri intermediare (între B și E) = C, D → `intermediateHopCount` = 2
 
 ### 5. `finalAddress`
-Ultima adresă relevantă din lanț, unde se oprește traseul fondurilor (nu mai trimite mai departe).
+Ultima adresă relevantă din lanț, unde se oprește traseul fondurilor.
 
 ### 6. `totalGasFeeWei`
 Costul total de gas pentru **toate** tranzacțiile din lanț, în Wei, ca string numeric.
 
-Formula per hop: `feeWei = gasUsed × gasPrice`  
-Apoi: `totalGasFeeWei = Σ feeWei` pe toate hop-urile.
-
 ### 7. `initialInputHex`
-Câmpul `input` (hex) din tranzacția inițială, exact cum apare on-chain. Începe cu `0x`.
-
-În Ganache GUI acest câmp apare cu eticheta **TX DATA**. Obții această valoare inspectând detaliile tranzacției inițiale sau cu:
-```bash
-npm run inspect:tx -- <initialTransactionHash> --show-input
-```
+Hint: În Ganache GUI acest câmp apare cu eticheta **TX DATA**.
 
 ### 8. `decodedMessage`
-Mesajul text rezultat din decodarea valorii `initialInputHex` (hex → UTF-8). Este doar textul din catalogul Challenge 1 (de exemplu `urmareste adanc transferul`).
+Mesajul text rezultat din decodarea valorii `initialInputHex`.
 
 ---
 
@@ -244,16 +227,6 @@ npm run inspect:tx -- <initialTransactionHash> --show-input
 ```
 
 Comanda afișează detalii despre tranzacție, inclusiv `Input data` (hex, echivalent cu `TX DATA` din Ganache) și `Input ASCII` (textul decodat). Flag-ul `--show-input` este necesar pentru a vedea câmpul input.
-
-### 4. Verificare automată a traseului (opțional)
-
-```bash
-npm run trace:funds -- <initialTransactionHash> 100
-```
-
-Acest tool parcurge lanțul automat și afișează toate hop-urile cu adrese, valori și gas fees. Folosește-l pentru verificare, nu ca soluție directă.
-
----
 
 ## Livrabil (JSON)
 

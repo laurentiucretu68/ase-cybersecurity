@@ -15,6 +15,23 @@ async function main() {
 
   const vaultData = JSON.parse(fs.readFileSync(vaultDataPath, "utf8"));
   const vaultAddr = vaultData.contractAddress;
+  const instancePath = path.join(process.cwd(), "student", "instance.json");
+  let challenge2PatchCode = null;
+
+  if (fs.existsSync(instancePath)) {
+    try {
+      const instance = JSON.parse(fs.readFileSync(instancePath, "utf8"));
+      if (
+        instance &&
+        instance.challenge2 &&
+        instance.challenge2.contractPatchCode !== undefined
+      ) {
+        challenge2PatchCode = String(instance.challenge2.contractPatchCode);
+      }
+    } catch (error) {
+      // Ignore parse errors here; validator will enforce required values.
+    }
+  }
 
   console.log("=== CHALLENGE 2: REENTRANCY ATTACK ===\n");
   console.log("Vault address:", vaultAddr);
@@ -83,13 +100,13 @@ async function main() {
     return parseFloat(hre.ethers.utils.formatEther(wei)).toFixed(6);
   }
 
-  console.log("\n=== VALORILE PENTRU JSON (Q3-Q6) ===\n");
-  console.log("Q3  vaultAddress:             ", vaultAddr);
-  console.log("Q4  initialVaultBalanceEth:   ", fmt4(balanceBefore));
-  console.log("Q5  attackerContractAddress:  ", attacker.address);
-  console.log("Q6  finalVaultBalanceEth:     ", fmt4(balanceAfter));
+  console.log("\n=== VALORILE PENTRU JSON (Q1-Q4) ===\n");
+  console.log("Q1  vaultAddress:             ", vaultAddr);
+  console.log("Q2  initialVaultBalanceEth:   ", fmt4(balanceBefore));
+  console.log("Q3  attackerContractAddress:  ", attacker.address);
+  console.log("Q4  finalVaultBalanceEth:     ", fmt4(balanceAfter));
 
-  console.log("\n=== PENTRU Q7 ===\n");
+  console.log("\n=== PENTRU Q5 ===\n");
   console.log("Attack TX hash:", attackTx.hash);
   console.log(
     "  Foloseste hash-ul de mai sus cu: npm run inspect:tx -- " +
@@ -101,6 +118,14 @@ async function main() {
   console.log(
     "  Gas fee-ul tranzactiei de atac trebuie calculat si formatat cu 6 zecimale."
   );
+  if (challenge2PatchCode) {
+    console.log("\n=== PENTRU Q6 ===\n");
+    console.log("Cod personalizat patch (din student/instance.json):", challenge2PatchCode);
+    console.log("Seteaza in contracts/SimpleVault.sol:");
+    console.log("  challenge2SecureMode = true;");
+    console.log("  challenge2PatchCode = <codul de mai sus>;");
+    console.log("  challenge2PatchChecksum = (challenge2PatchCode % 97) + 3;");
+  }
 
   const attackDataPath = path.join(deploymentsDir, "attack-results.json");
   const attackData = {

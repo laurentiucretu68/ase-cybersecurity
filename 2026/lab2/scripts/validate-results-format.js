@@ -9,7 +9,6 @@ const HEX_REGEX = /^0x[a-fA-F0-9]*$/;
 const UINT_STRING_REGEX = /^[0-9]+$/;
 const ETH_4DP_REGEX = /^[0-9]+\.[0-9]{4}$/;
 const ETH_6DP_REGEX = /^[0-9]+\.[0-9]{6}$/;
-const TOKEN_REGEX = /^[a-z][a-z0-9-]*$/;
 
 function parseArgs(argv) {
   return {
@@ -134,33 +133,90 @@ function validateChallenge2(root) {
   }
 
   const a = root.answers;
+  const projectRoot = path.resolve(__dirname, "..");
 
-  if (!isNonEmptyString(a.q1VulnerabilityPattern) || !TOKEN_REGEX.test(a.q1VulnerabilityPattern)) {
-    pushError(errors, "answers.q1VulnerabilityPattern", "must be a lowercase token");
+  if (!isNonEmptyString(a.q1VaultAddress) || !ADDRESS_REGEX.test(a.q1VaultAddress)) {
+    pushError(errors, "answers.q1VaultAddress", "must be a valid address");
   }
 
-  if (!isNonEmptyString(a.q2RemediationPattern) || !TOKEN_REGEX.test(a.q2RemediationPattern)) {
-    pushError(errors, "answers.q2RemediationPattern", "must be a lowercase token");
+  if (!isNonEmptyString(a.q2InitialVaultBalanceEth) || !ETH_4DP_REGEX.test(a.q2InitialVaultBalanceEth)) {
+    pushError(errors, "answers.q2InitialVaultBalanceEth", "must be numeric string with 4 decimals");
   }
 
-  if (!isNonEmptyString(a.q3VaultAddress) || !ADDRESS_REGEX.test(a.q3VaultAddress)) {
-    pushError(errors, "answers.q3VaultAddress", "must be a valid address");
+  if (!isNonEmptyString(a.q3AttackerContractAddress) || !ADDRESS_REGEX.test(a.q3AttackerContractAddress)) {
+    pushError(errors, "answers.q3AttackerContractAddress", "must be a valid address");
   }
 
-  if (!isNonEmptyString(a.q4InitialVaultBalanceEth) || !ETH_4DP_REGEX.test(a.q4InitialVaultBalanceEth)) {
-    pushError(errors, "answers.q4InitialVaultBalanceEth", "must be numeric string with 4 decimals");
+  if (!isNonEmptyString(a.q4FinalVaultBalanceEth) || !ETH_4DP_REGEX.test(a.q4FinalVaultBalanceEth)) {
+    pushError(errors, "answers.q4FinalVaultBalanceEth", "must be numeric string with 4 decimals");
   }
 
-  if (!isNonEmptyString(a.q5AttackerContractAddress) || !ADDRESS_REGEX.test(a.q5AttackerContractAddress)) {
-    pushError(errors, "answers.q5AttackerContractAddress", "must be a valid address");
+  if (!isNonEmptyString(a.q5AttackGasFeeEth) || !ETH_6DP_REGEX.test(a.q5AttackGasFeeEth)) {
+    pushError(errors, "answers.q5AttackGasFeeEth", "must be numeric string with 6 decimals");
   }
 
-  if (!isNonEmptyString(a.q6FinalVaultBalanceEth) || !ETH_4DP_REGEX.test(a.q6FinalVaultBalanceEth)) {
-    pushError(errors, "answers.q6FinalVaultBalanceEth", "must be numeric string with 4 decimals");
-  }
+  if (!isNonEmptyString(a.q6ContractPatchCode) || !UINT_STRING_REGEX.test(a.q6ContractPatchCode)) {
+    pushError(errors, "answers.q6ContractPatchCode", "must be an unsigned integer string");
+  } else {
+    const instancePath = path.join(projectRoot, "student", "instance.json");
+    if (fs.existsSync(instancePath)) {
+      try {
+        const instance = readJson(instancePath);
+        const expectedPatchCode =
+          instance &&
+          instance.challenge2 &&
+          instance.challenge2.contractPatchCode !== undefined
+            ? String(instance.challenge2.contractPatchCode)
+            : null;
 
-  if (!isNonEmptyString(a.q7AttackGasFeeEth) || !ETH_6DP_REGEX.test(a.q7AttackGasFeeEth)) {
-    pushError(errors, "answers.q7AttackGasFeeEth", "must be numeric string with 6 decimals");
+        if (expectedPatchCode && a.q6ContractPatchCode !== expectedPatchCode) {
+          pushError(
+            errors,
+            "answers.q6ContractPatchCode",
+            `must match student instance patch code (${expectedPatchCode})`
+          );
+        }
+      } catch (error) {
+        pushError(errors, "student/instance.json", `cannot be read (${error.message})`);
+      }
+    }
+
+    const vaultContractPath = path.join(projectRoot, "contracts", "SimpleVault.sol");
+    if (fs.existsSync(vaultContractPath)) {
+      const contractSource = fs.readFileSync(vaultContractPath, "utf8");
+      const secureModeRegex = /challenge2SecureMode\s*=\s*true\s*;/;
+      const patchRegex = new RegExp(
+        `challenge2PatchCode\\s*=\\s*${a.q6ContractPatchCode}\\s*;`
+      );
+      const expectedChecksum = (BigInt(a.q6ContractPatchCode) % 97n) + 3n;
+      const checksumRegex = new RegExp(
+        `challenge2PatchChecksum\\s*=\\s*${expectedChecksum.toString()}\\s*;`
+      );
+
+      if (!secureModeRegex.test(contractSource)) {
+        pushError(
+          errors,
+          "contracts/SimpleVault.sol",
+          "must contain challenge2SecureMode set to true"
+        );
+      }
+
+      if (!patchRegex.test(contractSource)) {
+        pushError(
+          errors,
+          "contracts/SimpleVault.sol",
+          "must contain challenge2PatchCode set to q6ContractPatchCode"
+        );
+      }
+
+      if (!checksumRegex.test(contractSource)) {
+        pushError(
+          errors,
+          "contracts/SimpleVault.sol",
+          `must contain challenge2PatchChecksum set to (q6ContractPatchCode % 97) + 3 = ${expectedChecksum.toString()}`
+        );
+      }
+    }
   }
 
   return errors;

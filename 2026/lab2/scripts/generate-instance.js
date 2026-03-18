@@ -322,11 +322,15 @@ function buildChallenge2(rng) {
   const totalVaultTenths = initialDepositsEth.reduce((sum, amount) => sum + Number.parseInt(amount, 10) * 10, 0);
   const minimumLoops = Math.ceil(totalVaultTenths / attackDepositTenths);
   const maxAttacks = Math.max(3, Math.min(60, minimumLoops + rng.int(1, 4)));
+  const contractPatchCode = rng.int(1000, 9999);
+  const contractPatchChecksum = (contractPatchCode % 97) + 3;
   return {
     depositorAccountIndices,
     initialDepositsEth,
     attackDepositEth,
-    maxAttacks
+    maxAttacks,
+    contractPatchCode,
+    contractPatchChecksum
   };
 }
 

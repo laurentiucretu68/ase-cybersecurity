@@ -19,6 +19,7 @@
     "c1:results": "node scripts/challenge1/generate-results.js",
     "attack": "hardhat run scripts/run-attack.js --network localhost",
     "c2:calc:gas": "node scripts/challenge2/calc-attack-gas.js",
+    "c2:calc:patch": "node scripts/challenge2/calc-patch-code.js",
     "c2:results": "node scripts/challenge2/generate-results.js",
     "console": "hardhat console --network localhost",
     "verify-setup": "node scripts/verify-setup.js",
@@ -35,7 +36,7 @@
     "smart-contracts",
     "cybersecurity"
   ],
-  "author": "Liviu Cretu <lcretu@bitdefender.com>",
+  "author": "Laurentiu Cretu <lcretu@bitdefender.com>",
   "license": "MIT",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.2.3",

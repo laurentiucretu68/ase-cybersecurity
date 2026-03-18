@@ -10,8 +10,6 @@ const {
 } = require("./helpers");
 
 const DEFAULT_OUTPUT = path.join("student", "submissions", "challenge2-results.json");
-const DEFAULT_Q1 = "reentrancy";
-const DEFAULT_Q2 = "checks-effects-interactions";
 
 function parseArgs(argv) {
   const args = {};
@@ -40,12 +38,9 @@ function main() {
   const outputRelative = args.out || DEFAULT_OUTPUT;
   const outputPath = path.resolve(PROJECT_ROOT, outputRelative);
 
-  const q1Token = args.q1 || DEFAULT_Q1;
-  const q2Token = args.q2 || DEFAULT_Q2;
-
   const instance = loadStudentInstance();
   const attackData = loadAttackResults();
-  const result = buildChallenge2Result(instance, attackData, q1Token, q2Token);
+  const result = buildChallenge2Result(instance, attackData);
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`);
