@@ -274,7 +274,7 @@ async function main() {
   });
 
   if (!instanceReady) {
-    console.log("       Run before deploy: npm run init:student -- --student-id <id>");
+    console.log("       Run before deploy: npm run init:student -- --student-number <1-100>");
   }
 
   formatHeader("Checking contract files...");
@@ -375,7 +375,7 @@ async function main() {
 
       let step = 1;
       if (!instanceReady) {
-        console.log(`${step}. Generate student instance: npm run init:student -- --student-id <id>`);
+        console.log(`${step}. Generate student instance: npm run init:student -- --student-number <1-100>`);
         step += 1;
       }
       if (!ganacheStatus.running) {
@@ -394,7 +394,7 @@ async function main() {
     console.log("Please fix the issues above before starting the lab.");
     console.log("\nCommon fixes:");
     console.log("- Run: npm install");
-    console.log("- Run: npm run init:student -- --student-id <id>");
+    console.log("- Run: npm run init:student -- --student-number <1-100>");
     console.log("- Start Ganache: ./start-ganache.sh");
     console.log("- Ensure you're in the lab4-blockchain-defi directory");
   }

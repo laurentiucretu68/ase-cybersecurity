@@ -351,7 +351,7 @@ function loadInstance(options = {}) {
 
   if (required) {
     throw new Error(
-      `Missing required instance file at ${INSTANCE_JSON_PATH}. Run: npm run init:student -- --student-id <id>`
+      `Missing required instance file at ${INSTANCE_JSON_PATH}. Run: npm run init:student -- --student-number <1-100>`
     );
   }
 
@@ -732,7 +732,7 @@ if sudo -u "$STUDENT_USER" bash -lc "cd '$LAB_DIR' && node scripts/verify-setup.
     print_success "Setup verification passed"
 else
     print_warning "Setup verification reported pending runtime steps (expected before init/deploy)"
-    print_info "After login run: cd ~/lab4-blockchain-defi && npm run init:student -- --student-id <id> && ./start-ganache.sh && npm run deploy:all && npm run verify-setup"
+    print_info "After login run: cd ~/lab4-blockchain-defi && npm run init:student -- --student-number <1-100> && ./start-ganache.sh && npm run deploy:all && npm run verify-setup"
 fi
 
 ################################################################################
@@ -848,14 +848,14 @@ echo ""
 echo "🚀 Next steps:"
 echo "  1. Reboot the VM (recommended)"
 echo "  2. Login as '$STUDENT_USER'"
-echo "  3. Run: npm run init:student -- --student-id <id>"
+echo "  3. Run: npm run init:student -- --student-number <1-100>"
 echo "  4. Wait for next login autostart or run ./start-ganache.sh once"
 echo "  5. Double-click 'Open-Lab' to open VS Code"
 echo "  6. Use GETTING_STARTED.md for the lab flow"
 echo ""
 echo "📖 Manual start commands:"
 echo "  cd ~/lab4-blockchain-defi"
-echo "  npm run init:student -- --student-id <id>"
+echo "  npm run init:student -- --student-number <1-100>"
 echo "  ./start-ganache.sh              # Open the preconfigured Ganache GUI"
 echo "  LAB_GANACHE_MODE=cli ./start-ganache.sh  # Fallback CLI mode"
 echo "  npm run deploy:all              # Deploy contracts"

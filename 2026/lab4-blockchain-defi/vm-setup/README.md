@@ -24,7 +24,7 @@ Scriptul instaleaza:
 
 ```bash
 cd ~/lab4-blockchain-defi
-npm run init:student -- --student-id <email_ase_sau_matricol>
+npm run init:student -- --student-number <1-100>
 ./start-ganache.sh
 npm run deploy:all
 npm run verify-setup
@@ -72,7 +72,7 @@ Inchide GUI si porneste din nou doar prin:
 ### `deploy:all` esueaza
 Verifica inainte:
 ```bash
-npm run init:student -- --student-id <id>
+npm run init:student -- --student-number <1-100>
 ./start-ganache.sh
 ```
 

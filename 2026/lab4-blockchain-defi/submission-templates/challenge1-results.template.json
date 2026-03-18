@@ -8,7 +8,6 @@
     "firstDestinationAddress": "0x...",
     "intermediateHopCount": 0,
     "finalAddress": "0x...",
-    "totalTimeSeconds": 0,
     "totalGasFeeWei": "0",
     "initialInputHex": "0x...",
     "decodedMessage": "CTF-..."

@@ -14,7 +14,7 @@ La finalul laboratorului vei sti:
 ```bash
 cd 2026/lab4-blockchain-defi
 npm install
-npm run init:student -- --student-id <email_ase_sau_matricol>
+npm run init:student -- --student-number <1-100>
 ./start-ganache.sh
 npm run deploy:challenge1
 npm run verify-setup

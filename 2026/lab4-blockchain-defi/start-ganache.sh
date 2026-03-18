@@ -199,17 +199,17 @@ if [[ -f "$INSTANCE_ENV" ]]; then
 else
   if [[ "$LAB_ALLOW_DEFAULT_CONFIG" == "1" ]]; then
     echo "student/instance.env not found, using default deterministic config"
-    echo "Run: npm run init:student -- --student-id <id> to generate a personalized instance"
+    echo "Run: npm run init:student -- --student-number <1-100> to generate a personalized instance"
   else
     if [[ "$LAB_AUTO_START" == "1" ]]; then
       echo "student/instance.env not found, skipping Ganache autostart"
-      echo "Generate an instance first: npm run init:student -- --student-id <id>"
+      echo "Generate an instance first: npm run init:student -- --student-number <1-100>"
       exit 0
     fi
 
     echo "student/instance.env not found"
     echo "Generate your instance first:"
-    echo "  npm run init:student -- --student-id <id>"
+    echo "  npm run init:student -- --student-number <1-100>"
     echo ""
     echo "Only after that rerun:"
     echo "  ./start-ganache.sh"

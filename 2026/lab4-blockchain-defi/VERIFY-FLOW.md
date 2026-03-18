@@ -46,7 +46,7 @@ npx hardhat compile
 ## Pasul 1: Generare instanÈ›Äƒ student
 
 ```bash
-npm run init:student -- --student-id test-student@example.com --force
+npm run init:student -- --student-number 42 --force
 ```
 
 **Output aÈ™teptat**:
@@ -187,7 +187,7 @@ npm run inspect:tx -- $(node -e "process.stdout.write(require('./deployments/cha
 npm run trace:funds -- $(node -e "process.stdout.write(require('./deployments/challenge1-data.json').initialTransactionHash)") 100
 ```
 
-**Output aÈ™teptat**: toate hop-urile listate cu adrese, valori, gas fees, destinaÈ›ia finalÄƒ È™i timpul total.
+**Output aÈ™teptat**: toate hop-urile listate cu adrese, valori, gas fees È™i destinaÈ›ia finalÄƒ.
 
 ### 5.4 Generare rÄƒspunsuri Challenge 1
 
@@ -200,9 +200,6 @@ const hopHashes = d.transfers.map(t => t.txHash);
 const firstDest = d.transfers[0].to;
 const finalAddr = d.transfers[d.transfers.length - 1].to;
 const interHops = d.transfers.length - 2; // fÄƒrÄƒ prima È™i ultima
-const t0 = d.transfers[0].timestamp;
-const tN = d.transfers[d.transfers.length - 1].timestamp;
-const totalTime = tN - t0;
 
 let totalGas = BigInt(0);
 d.transfers.forEach(t => {
@@ -219,7 +216,6 @@ const result = {
     firstDestinationAddress: firstDest,
     intermediateHopCount: interHops < 0 ? 0 : interHops,
     finalAddress: finalAddr,
-    totalTimeSeconds: totalTime,
     totalGasFeeWei: totalGas.toString(),
     initialInputHex: d.secretMessageHex,
     decodedMessage: d.secretMessage
@@ -379,7 +375,7 @@ Apoi reÃ®ncepe de la **Pasul 1**.
 |---|---|---|
 | Install | `npm install` | FÄƒrÄƒ erori |
 | Compile | `npx hardhat compile` | `Compiled N Solidity files` |
-| Init student | `npm run init:student -- --student-id X --force` | `Instance generated successfully` |
+| Init student | `npm run init:student -- --student-number 42 --force` | `Instance generated successfully` |
 | Start Ganache | `LAB_GANACHE_MODE=cli ./start-ganache.sh` | Port 7545 activ |
 | Deploy C1 | `npm run deploy:challenge1` | `challenge1-data.json` creat |
 | Deploy C2 | `npm run deploy:vault` | `simple-vault.json` creat |

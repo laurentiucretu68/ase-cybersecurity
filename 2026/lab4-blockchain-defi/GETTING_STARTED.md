@@ -6,7 +6,7 @@
 git clone https://github.com/[username]/ase-cybersecurity.git
 cd ase-cybersecurity/2026/lab4-blockchain-defi
 npm install
-npm run init:student -- --student-id <email_ase_sau_matricol>
+npm run init:student -- --student-number <1-100>
 ```
 
 ## 2. Start chain (GUI)
@@ -76,7 +76,7 @@ cp submission-templates/challenge2-results.template.json student/submissions/cha
 
 ```bash
 # Re-generate student instance
-npm run init:student -- --student-id <id> --force
+npm run init:student -- --student-number <1-100> --force
 
 # Run Challenge 2 tests
 npm run test:all

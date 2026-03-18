@@ -112,10 +112,6 @@ function validateChallenge1(root) {
     pushError(errors, "answers.finalAddress", "must be a valid address");
   }
 
-  if (!isNonNegativeInteger(a.totalTimeSeconds)) {
-    pushError(errors, "answers.totalTimeSeconds", "must be a non-negative integer");
-  }
-
   if (!isNonEmptyString(a.totalGasFeeWei) || !UINT_STRING_REGEX.test(a.totalGasFeeWei)) {
     pushError(errors, "answers.totalGasFeeWei", "must be an unsigned integer string");
   }

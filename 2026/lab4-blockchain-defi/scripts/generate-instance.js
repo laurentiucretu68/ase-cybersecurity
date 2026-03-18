@@ -101,21 +101,60 @@ function parseArgs(argv) {
 
 function printHelp() {
   console.log(`Usage:
-  node scripts/generate-instance.js --student-id <id> [--salt <secret>] [--force]
+  node scripts/generate-instance.js --student-number <1-100> [--salt <secret>] [--force]
 
 Options:
-  --student-id   Stable student identifier (email, username, matricol)
+  --student-number  Student number from lab roster (1-100). Generates a unique student id.
   --salt         Secret instructor salt. Falls back to LAB_INSTANCE_SALT env var.
   --force        Overwrite existing student instance files
   --help         Show this message
 `);
 }
 
+function parseStudentNumber(value) {
+  const parsed = Number.parseInt(String(value), 10);
+
+  if (!Number.isInteger(parsed) || String(parsed) !== String(value).trim()) {
+    throw new Error("Invalid --student-number. Expected an integer between 1 and 100.");
+  }
+
+  if (parsed < 1 || parsed > 100) {
+    throw new Error("Invalid --student-number. Expected a value between 1 and 100.");
+  }
+
+  return parsed;
+}
+
+function deriveStudentIdFromNumber(studentNumber) {
+  const padded = String(studentNumber).padStart(3, "0");
+  const hash = crypto
+    .createHash("sha256")
+    .update(`lab4-student-number:${padded}`)
+    .digest("hex")
+    .slice(0, 8);
+
+  return `student-${padded}-${hash}`;
+}
+
 function asEthStringFromTenths(tenths) {
   return (tenths / 10).toFixed(1);
 }
 
-function buildChallenge1(rng, instanceTag) {
+function buildStudentLabel(studentId) {
+  const normalized = String(studentId || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  if (!normalized) {
+    return "unknown-student";
+  }
+
+  return normalized.slice(0, 20);
+}
+
+function buildChallenge1(rng, instanceTag, studentId) {
   const companyAccountIndex = 0;
   const available = [];
 
@@ -142,7 +181,8 @@ function buildChallenge1(rng, instanceTag) {
     }
   }
 
-  const message = `CTF-${instanceTag}: follow-the-money`;
+  const studentLabel = buildStudentLabel(studentId);
+  const message = `CTF-${instanceTag}: student-${studentLabel}; follow-the-money`;
   const messageHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message));
 
   return {
@@ -175,11 +215,17 @@ function buildChallenge2(rng) {
 }
 
 function buildEnvFile(instance) {
+  const studentNumberLine =
+    typeof instance.studentNumber === "number"
+      ? `LAB_STUDENT_NUMBER=${instance.studentNumber}`
+      : "LAB_STUDENT_NUMBER=";
+
   return [
     "# Auto-generated per-student lab instance",
     "# Do not edit manually unless you know what you are doing",
     `LAB_INSTANCE_ID=${instance.instanceId}`,
     `LAB_STUDENT_ID=${instance.studentId}`,
+    studentNumberLine,
     `LAB_CHAIN_ID=${instance.chain.chainId}`,
     `LAB_PORT=${instance.chain.port}`,
     `LAB_ACCOUNTS=${instance.chain.accounts}`,
@@ -199,10 +245,19 @@ function main() {
     return;
   }
 
-  const studentId = args["student-id"] || process.env.STUDENT_ID;
-  if (!studentId) {
-    throw new Error("Missing --student-id (or STUDENT_ID env var).");
+  if (args["student-id"] !== undefined) {
+    throw new Error("Option --student-id is no longer supported. Use --student-number <1-100>.");
   }
+
+  const studentNumberArg = args["student-number"] || process.env.STUDENT_NUMBER;
+
+  if (studentNumberArg === undefined) {
+    throw new Error("Missing --student-number (or STUDENT_NUMBER env var).");
+  }
+
+  const studentNumber = parseStudentNumber(studentNumberArg);
+  const studentId = deriveStudentIdFromNumber(studentNumber);
+  console.log(`[info] Derived student id from number ${studentNumber}: ${studentId}`);
 
   const salt = args.salt || process.env.LAB_INSTANCE_SALT || "CHANGE_ME_INSTRUCTOR_SALT";
   if (salt === "CHANGE_ME_INSTRUCTOR_SALT") {
@@ -223,12 +278,13 @@ function main() {
 
   const instance = deepClone(DEFAULT_INSTANCE);
   instance.version = 1;
+  instance.studentNumber = studentNumber;
   instance.studentId = studentId;
   instance.instanceId = `lab4-${seedHash.slice(0, 12)}`;
   instance.seedHash = seedHash;
   instance.generatedAt = new Date().toISOString();
   instance.chain.mnemonic = mnemonic;
-  instance.challenge1 = buildChallenge1(rng, instanceTag);
+  instance.challenge1 = buildChallenge1(rng, instanceTag, studentId);
   instance.challenge2 = buildChallenge2(rng);
   instance.grading = {
     token: `CTF-${seedHash.slice(0, 12).toUpperCase()}`
