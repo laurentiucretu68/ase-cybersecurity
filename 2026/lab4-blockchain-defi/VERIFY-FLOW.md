@@ -104,27 +104,17 @@ curl -s -X POST http://127.0.0.1:7545 \
 
 ---
 
-## Pasul 3: Deploy contracte
+## Pasul 3: Deploy Challenge 1
 
-### 3.1 Deploy complet (Challenge 2 vault + Challenge 1 forensics)
+### 3.1 Deploy Challenge 1
 
 ```bash
-npm run deploy:all
+npm run deploy:challenge1
 ```
 
-**Output așteptat** (secvențial):
+**Output așteptat**:
 
 ```
-Deploying SimpleVault for Challenge 2
-...
-SimpleVault deployed to: 0x...
-Funding vault with per-student deposits...
-  [X] 0x... deposited NN ETH
-  ...
-Vault balance: NN.0 ETH
-...
-Challenge 2 setup complete
-
 Setting up Challenge 1 (Blockchain Forensics)
 ...
   transfer 1: [0] 0x... -> [X] 0x... (NN.N ETH)
@@ -140,19 +130,15 @@ Initial tx hash: 0x...
 ls deployments/
 ```
 
-**Output așteptat**: `challenge1-data.json`, `simple-vault.json`
+**Output așteptat**: `challenge1-data.json`
 
 ```bash
 node -e "const d = require('./deployments/challenge1-data.json'); console.log('C1 initial tx:', d.initialTransactionHash); console.log('C1 transfers:', d.transferCount); console.log('C1 final dest:', d.finalDestination.address);"
 ```
 
-```bash
-node -e "const d = require('./deployments/simple-vault.json'); console.log('C2 vault addr:', d.contractAddress); console.log('C2 total bal:', d.totalBalance, 'ETH'); console.log('C2 deposits:', d.deposits.length);"
-```
-
 ---
 
-## Pasul 4: Verify setup
+## Pasul 4: Verify setup (pentru Challenge 1)
 
 ```bash
 npm run verify-setup
@@ -160,7 +146,7 @@ npm run verify-setup
 
 **Output așteptat**: toate check-urile `[OK]`, final `Setup verification PASSED!`
 
-Dacă vezi `[FAIL]` la `scripts/lib/instance-config.js`, modulul lipsește. Dacă vezi `[WARN]` la deployments, rulează din nou `npm run deploy:all`.
+Dacă vezi `[FAIL]` la `scripts/lib/instance-config.js`, modulul lipsește. Dacă vezi `[WARN]` la deployments, rulează din nou `npm run deploy:challenge1`.
 
 ---
 
@@ -259,6 +245,12 @@ npm run validate:results -- --challenge1
 ---
 
 ## Pasul 6: Rezolvare Challenge 2 (Reentrancy Attack)
+
+### 6.0 Deploy Challenge 2 (după Challenge 1)
+
+```bash
+npm run deploy:vault
+```
 
 ### 6.1 Verifică datele vault-ului
 
@@ -553,7 +545,8 @@ Apoi reîncepe de la **Pasul 1**.
 | Compile | `npx hardhat compile` | `Compiled N Solidity files` |
 | Init student | `npm run init:student -- --student-id X --force` | `Instance generated successfully` |
 | Start Ganache | `LAB_GANACHE_MODE=cli ./start-ganache.sh` | Port 7545 activ |
-| Deploy all | `npm run deploy:all` | `challenge1-data.json` + `simple-vault.json` create |
+| Deploy C1 | `npm run deploy:challenge1` | `challenge1-data.json` creat |
+| Deploy C2 | `npm run deploy:vault` | `simple-vault.json` creat |
 | Verify setup | `npm run verify-setup` | `Setup verification PASSED!` |
 | Inspect tx | `npm run inspect:tx -- <hash> --show-input` | Afișează input + ASCII |
 | Trace funds | `npm run trace:funds -- <hash> 100` | Listează toate hop-urile |

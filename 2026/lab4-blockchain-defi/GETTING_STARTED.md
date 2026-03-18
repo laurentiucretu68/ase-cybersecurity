@@ -20,15 +20,13 @@ Ganache GUI trebuie sa porneasca pe:
 - `network id = 1337`
 - `visible accounts = 1`
 
-## 3. Deploy scenarii
+## 3. Deploy Challenge 1
 
 ```bash
-npm run deploy:all
+npm run deploy:challenge1
 ```
 
-Acest script ruleaza:
-- deploy Challenge 2 (`SimpleVault`)
-- setup Challenge 1 (`challenge1-data.json`)
+Acest pas pregateste doar datele pentru Challenge 1 (`challenge1-data.json`).
 
 ## 4. Verify setup
 
@@ -39,8 +37,14 @@ npm run verify-setup
 ## 5. Start challenges
 
 1. [Challenge 1 - Forensics](challenges/challenge1-forensics.md)
-2. [Challenge 2 - Reentrancy](challenges/challenge2-reentrancy.md)
-3. [Theory Notes](THEORY.md)
+2. [Theory Notes](THEORY.md)
+3. Dupa ce termini Challenge 1, deploy pentru Challenge 2:
+
+```bash
+npm run deploy:vault
+```
+
+4. [Challenge 2 - Reentrancy](challenges/challenge2-reentrancy.md)
 
 ## 6. Scoring
 

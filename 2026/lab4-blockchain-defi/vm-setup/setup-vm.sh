@@ -743,6 +743,7 @@ DESKTOP_DIR="$STUDENT_HOME/Desktop"
 AUTOSTART_DIR="$STUDENT_HOME/.config/autostart"
 sudo -u "$STUDENT_USER" mkdir -p "$DESKTOP_DIR"
 sudo -u "$STUDENT_USER" mkdir -p "$AUTOSTART_DIR"
+sudo -u "$STUDENT_USER" rm -f "$DESKTOP_DIR/Open-Ganache-GUI.desktop" "$DESKTOP_DIR/Lab-Instructions.desktop"
 
 # Start Ganache shortcut
 cat << 'EOF' | sudo tee "$DESKTOP_DIR/Start-Ganache.desktop" > /dev/null
@@ -759,21 +760,6 @@ EOF
 
 sudo chmod +x "$DESKTOP_DIR/Start-Ganache.desktop"
 
-# Ganache GUI shortcut
-cat << 'EOF' | sudo tee "$DESKTOP_DIR/Open-Ganache-GUI.desktop" > /dev/null
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Open Ganache GUI
-Comment=Open the preconfigured Ganache GUI for DeFi Heist Lab
-Exec=/bin/bash -lc "cd ~/lab4-blockchain-defi && ./start-ganache.sh >> ~/ganache.log 2>&1"
-Icon=applications-development
-Terminal=false
-Categories=Development;
-EOF
-
-sudo chmod +x "$DESKTOP_DIR/Open-Ganache-GUI.desktop"
-
 # VS Code Lab shortcut
 cat << EOF | sudo tee "$DESKTOP_DIR/Open-Lab.desktop" > /dev/null
 [Desktop Entry]
@@ -788,21 +774,6 @@ Categories=Development;
 EOF
 
 sudo chmod +x "$DESKTOP_DIR/Open-Lab.desktop"
-
-# Lab README shortcut
-cat << EOF | sudo tee "$DESKTOP_DIR/Lab-Instructions.desktop" > /dev/null
-[Desktop Entry]
-Version=1.0
-Type=Application
-Name=Lab Instructions
-Comment=Open lab instructions in browser
-Exec=firefox "$LAB_DIR/GETTING_STARTED.md"
-Icon=firefox
-Terminal=false
-Categories=Education;
-EOF
-
-sudo chmod +x "$DESKTOP_DIR/Lab-Instructions.desktop"
 cat << 'EOF' | sudo tee "$AUTOSTART_DIR/Ganache-Autostart.desktop" > /dev/null
 [Desktop Entry]
 Version=1.0
@@ -879,9 +850,8 @@ echo "  1. Reboot the VM (recommended)"
 echo "  2. Login as '$STUDENT_USER'"
 echo "  3. Run: npm run init:student -- --student-id <id>"
 echo "  4. Wait for next login autostart or run ./start-ganache.sh once"
-echo "  5. Optional: double-click 'Open-Ganache-GUI' for the desktop app"
-echo "  6. Double-click 'Open-Lab' to open VS Code"
-echo "  7. Read 'Lab-Instructions' to get started"
+echo "  5. Double-click 'Open-Lab' to open VS Code"
+echo "  6. Use GETTING_STARTED.md for the lab flow"
 echo ""
 echo "📖 Manual start commands:"
 echo "  cd ~/lab4-blockchain-defi"

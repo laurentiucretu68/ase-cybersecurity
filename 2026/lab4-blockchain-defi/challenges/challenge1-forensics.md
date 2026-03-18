@@ -133,6 +133,9 @@ npm run init:student -- --student-id <id>
 npm run deploy:challenge1
 ```
 
+Important: pentru acest challenge rulezi doar `npm run deploy:challenge1`.
+Nu folosi `npm run deploy:all` aici. Challenge 2 se deploieaza separat, cand treci la `challenge2-reentrancy.md`.
+
 Verifică în Ganache GUI:
 1. `RPC Server`: `http://127.0.0.1:7545`
 2. `Network ID`: `1337`

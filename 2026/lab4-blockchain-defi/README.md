@@ -16,9 +16,13 @@ cd 2026/lab4-blockchain-defi
 npm install
 npm run init:student -- --student-id <email_ase_sau_matricol>
 ./start-ganache.sh
-npm run deploy:all
+npm run deploy:challenge1
 npm run verify-setup
 ```
+
+Flux recomandat pentru studenti:
+- Challenge 1: deploy cu `npm run deploy:challenge1`
+- Challenge 2: deploy ulterior, separat, cu `npm run deploy:vault`
 
 ## Challenges active
 
@@ -45,8 +49,11 @@ Conversie recomandata in nota:
 ## Comenzi utile
 
 ```bash
-# Deploy flow complet (Challenge 1 + Challenge 2)
-npm run deploy:all
+# Deploy Challenge 1 (recomandat la inceput)
+npm run deploy:challenge1
+
+# Deploy Challenge 2 (dupa ce termini Challenge 1)
+npm run deploy:vault
 
 # Teste locale (doar Challenge 2)
 npm run test:all
