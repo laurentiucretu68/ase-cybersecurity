@@ -147,6 +147,23 @@ Verifică în Ganache GUI:
 3. Conturile sunt vizibile
 4. Workspace: `Quickstart` sau `BLOCKCHAIN-DEFI`
 
+## Scripturi helper (optional)
+
+Pe langa analiza manuala in Ganache GUI, poti folosi si scripturile din `scripts/challenge1`:
+
+```bash
+npm run c1:calc:gas
+npm run c1:calc:time
+npm run c1:results
+```
+
+Ce fac:
+- `c1:calc:gas` calculeaza `totalGasFeeWei` pentru toate hop-urile.
+- `c1:calc:time` calculeaza diferenta de timp dintre primul si ultimul hop.
+- `c1:results` genereaza automat `student/submissions/challenge1-results.json`.
+
+Le poti folosi pentru verificare sau pentru generare rapida a JSON-ului final.
+
 ---
 
 ## Întrebări cu răspuns exact (50p)

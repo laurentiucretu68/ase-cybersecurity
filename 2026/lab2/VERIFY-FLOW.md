@@ -19,7 +19,7 @@ npx hardhat compile
 ## Pasul 1: Generare instanță student
 
 ```bash
-npm run init:student -- --student-id test-student@example.com --force
+npm run init:student -- --student-number 70 --force
 ```
 
 Verificare:
@@ -70,44 +70,9 @@ npm run verify-setup
 #### 5A.1 Obține datele și generează răspunsuri
 
 ```bash
-node -e "
-const d = require('./deployments/challenge1-data.json');
-const instance = require('./student/instance.json');
-
-const hopHashes = d.transfers.map(t => t.txHash);
-const firstDest = d.transfers[0].to;
-const finalAddr = d.transfers[d.transfers.length - 1].to;
-const interHops = d.transfers.length - 2;
-const t0 = d.transfers[0].timestamp;
-const tN = d.transfers[d.transfers.length - 1].timestamp;
-
-let totalGas = BigInt(0);
-d.transfers.forEach(t => {
-  totalGas += BigInt(t.gasUsed) * BigInt(t.gasPriceWei);
-});
-
-const result = {
-  challenge: 'challenge1-forensics',
-  studentId: instance.studentId,
-  instanceId: instance.instanceId,
-  answers: {
-    initialTransactionHash: d.initialTransactionHash,
-    hopTransactionHashes: hopHashes,
-    firstDestinationAddress: firstDest,
-    intermediateHopCount: interHops < 0 ? 0 : interHops,
-    finalAddress: finalAddr,
-    totalTimeSeconds: tN - t0,
-    totalGasFeeWei: totalGas.toString(),
-    initialInputHex: d.secretMessageHex,
-    decodedMessage: d.secretMessage
-  }
-};
-
-const fs = require('fs');
-fs.mkdirSync('student/submissions', { recursive: true });
-fs.writeFileSync('student/submissions/challenge1-results.json', JSON.stringify(result, null, 2) + '\n');
-console.log(JSON.stringify(result, null, 2));
-"
+npm run c1:calc:gas
+npm run c1:calc:time
+npm run c1:results
 ```
 
 #### 5A.2 Verificare cu inspect și trace
@@ -200,30 +165,8 @@ Citește linia `Gas fee:` din output. Formatează cu 6 zecimale.
 ### 6.3 Generare JSON Challenge 2
 
 ```bash
-node -e "
-const fs = require('fs');
-const instance = require('./student/instance.json');
-const attack = require('./deployments/attack-results.json');
-
-const result = {
-  challenge: 'challenge2-reentrancy',
-  studentId: instance.studentId,
-  instanceId: instance.instanceId,
-  answers: {
-    q1VulnerabilityPattern: 'reentrancy',
-    q2RemediationPattern: 'checks-effects-interactions',
-    q3VaultAddress: attack.vaultAddress,
-    q4InitialVaultBalanceEth: attack.initialVaultBalanceEth,
-    q5AttackerContractAddress: attack.attackerAddress,
-    q6FinalVaultBalanceEth: attack.finalVaultBalanceEth,
-    q7AttackGasFeeEth: attack.attackGasFeeEth
-  }
-};
-
-fs.mkdirSync('student/submissions', { recursive: true });
-fs.writeFileSync('student/submissions/challenge2-results.json', JSON.stringify(result, null, 2) + '\n');
-console.log(JSON.stringify(result, null, 2));
-"
+npm run c2:calc:gas
+npm run c2:results
 ```
 
 ### Validare Challenge 2
@@ -257,7 +200,7 @@ npm run clean
 |---|---|---|
 | Install | `npm install` | Fără erori |
 | Compile | `npx hardhat compile` | Compiled N Solidity files |
-| Init student | `npm run init:student -- --student-id X --force` | Instance generated |
+| Init student | `npm run init:student -- --student-number <1-100> --force` | Instance generated |
 | Start Ganache | `LAB_GANACHE_MODE=cli ./start-ganache.sh` | Port 7545 activ |
 | Deploy all | `npm run deploy:all` | Ambele JSON-uri create |
 | Verify setup | `npm run verify-setup` | PASSED |

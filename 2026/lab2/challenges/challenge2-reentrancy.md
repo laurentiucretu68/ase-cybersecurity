@@ -101,6 +101,21 @@ npm run deploy:vault
 
 Dacă ai rulat `npm run deploy:all` la Challenge 1, vault-ul este deja deployed.
 
+## Scripturi helper (optional)
+
+Pe langa pasii manuali (CLI + Ganache GUI), poti folosi si scripturile din `scripts/challenge2`:
+
+```bash
+npm run c2:calc:gas
+npm run c2:results
+```
+
+Ce fac:
+- `c2:calc:gas` afiseaza direct valoarea pentru `q7AttackGasFeeEth` (din `deployments/attack-results.json`).
+- `c2:results` genereaza automat `student/submissions/challenge2-results.json`.
+
+Aceste scripturi sunt utile pentru verificare rapida si pentru completarea corecta a livrabilului.
+
 ---
 
 ## Pas cu pas: cum rezolvi challenge-ul
