@@ -2,23 +2,21 @@
 
 > Materiale pentru ediția 2026 a laboratorului de **Cybersecurity**
 
-## 📋 Laboratoare
+## Laboratoare
 
-### 🔐 [Lab 1: Elemente de Criptografie](lab1/readme.md)
+### [Lab 2: The DeFi Heist - Blockchain Security & Smart Contracts](lab2/)
 
-**Durată**: 2 ore
-**Dificultate**: Începător
+**Durată**: 3-4 ore  
+**Dificultate**: Beginner-Intermediate
 
-Introducere în criptografie folosind OpenSSL — criptare simetrică, asimetrică și semnături digitale:
+Securitatea blockchain-ului și vulnerabilitățile smart contracts prin scenarii practice:
 
-- 🔑 **Criptare simetrică (AES)** — Generarea cheilor, criptarea și decriptarea fișierelor
-- 🔐 **Criptare asimetrică (RSA)** — Perechi de chei publice/private, criptare end-to-end
-- ✍️ **Semnături digitale (ECDSA)** — Verificarea autenticității și integrității datelor
-- 📝 [Temă Practică](lab1/tema.md)
+- **Challenge 1**: Blockchain Forensics — urmărirea tranzacțiilor și investigație on-chain
+- **Challenge 2**: Reentrancy Attack — exploatarea și înțelegerea celei mai cunoscute vulnerabilități DeFi
 
-**Tehnologii**: OpenSSL, AES-256, RSA, ECDSA, SHA-256
+**Tehnologii**: Ethereum, Solidity, Hardhat, Ganache
 
-[➡️ Accesează Lab 1](lab1/readme.md)
+[Accesează Lab 2](lab2/)
 
 ---
 
