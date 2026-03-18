@@ -46,6 +46,7 @@ NC='\033[0m' # No Color
 # Configuration
 REPO_URL="https://github.com/laurentiucretu68/ase-cybersecurity.git"  # UPDATE THIS!
 REPO_BRANCH="beta"  # Branch to clone for lab4
+REPO_FALLBACK_BRANCH="main"  # Fallback branch if configured one is incomplete
 NODE_MAJOR="20"
 RECLONE_IF_EXISTS="false"
 STUDENT_USER="student"
@@ -115,6 +116,67 @@ ensure_student_user() {
 
     sudo mkdir -p "$STUDENT_HOME/Desktop"
     sudo chown -R "$STUDENT_USER:$STUDENT_USER" "$STUDENT_HOME"
+}
+
+validate_lab_source_dir() {
+    local source_dir="$1"
+
+    if [ -z "$source_dir" ] || ! sudo -u "$STUDENT_USER" test -d "$source_dir"; then
+        return 1
+    fi
+
+    local required_files=(
+        "package.json"
+        "start-ganache.sh"
+        "scripts/generate-instance.js"
+        "scripts/lib/instance-config.js"
+        "scripts/verify-setup.js"
+        "contracts/SimpleVault.sol"
+        "challenges/challenge1-forensics.md"
+        "challenges/challenge2-reentrancy.md"
+    )
+    local missing_files=()
+
+    for rel_path in "${required_files[@]}"; do
+        if ! sudo -u "$STUDENT_USER" test -f "$source_dir/$rel_path"; then
+            missing_files+=("$rel_path")
+        fi
+    done
+
+    if [ "${#missing_files[@]}" -eq 0 ]; then
+        return 0
+    fi
+
+    print_warning "Lab directory exists but is missing required files:"
+    for rel_path in "${missing_files[@]}"; do
+        print_warning "  - $rel_path"
+    done
+
+    return 1
+}
+
+try_checkout_branch() {
+    local target_branch="$1"
+
+    if [ -z "$target_branch" ]; then
+        return 1
+    fi
+
+    print_info "Trying fallback repository branch: $target_branch"
+
+    if ! sudo -u "$STUDENT_USER" bash -lc "git -C '$REPO_DIR' ls-remote --exit-code --heads origin '$target_branch' >/dev/null 2>&1"; then
+        print_warning "Fallback branch '$target_branch' does not exist on origin"
+        return 1
+    fi
+
+    if sudo -u "$STUDENT_USER" bash -lc "git -C '$REPO_DIR' fetch origin '$target_branch' --depth=1" \
+        && sudo -u "$STUDENT_USER" bash -lc "git -C '$REPO_DIR' checkout -B '$target_branch' 'origin/$target_branch'"; then
+        print_success "Checked out fallback branch '$target_branch'"
+        return 0
+    fi
+
+    print_warning "Could not checkout fallback branch '$target_branch'"
+    return 1
 }
 
 ################################################################################
@@ -342,8 +404,26 @@ if ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
     LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab4-blockchain-defi" | head -1)
 fi
 
-if [ -z "$LAB_SOURCE_DIR" ] || ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
-    print_warning "Lab directory is missing in repository"
+LAB_SOURCE_OK=false
+if validate_lab_source_dir "$LAB_SOURCE_DIR"; then
+    LAB_SOURCE_OK=true
+fi
+
+if [ "$LAB_SOURCE_OK" != "true" ] && [ "$REPO_BRANCH" != "$REPO_FALLBACK_BRANCH" ]; then
+    if try_checkout_branch "$REPO_FALLBACK_BRANCH"; then
+        LAB_SOURCE_DIR="$REPO_DIR/$LAB_REL_PATH"
+        if ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
+            LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab4-blockchain-defi" | head -1)
+        fi
+
+        if validate_lab_source_dir "$LAB_SOURCE_DIR"; then
+            LAB_SOURCE_OK=true
+        fi
+    fi
+fi
+
+if [ "$LAB_SOURCE_OK" != "true" ]; then
+    print_warning "Lab directory is missing or incomplete in repository"
 
     if [ -n "$LOCAL_REPO_ROOT" ] && [ -d "$LOCAL_REPO_ROOT/$LAB_REL_PATH" ]; then
         print_info "Using local repository fallback: $LOCAL_REPO_ROOT"
@@ -351,12 +431,17 @@ if [ -z "$LAB_SOURCE_DIR" ] || ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DI
         sudo cp -a "$LOCAL_REPO_ROOT" "$REPO_DIR"
         sudo chown -R "$STUDENT_USER:$STUDENT_USER" "$REPO_DIR"
         LAB_SOURCE_DIR="$REPO_DIR/$LAB_REL_PATH"
+
+        if validate_lab_source_dir "$LAB_SOURCE_DIR"; then
+            LAB_SOURCE_OK=true
+        fi
     fi
 fi
 
-if [ -z "$LAB_SOURCE_DIR" ] || ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
-    print_error "Could not locate lab directory inside cloned repository or local fallback"
+if [ "$LAB_SOURCE_OK" != "true" ]; then
+    print_error "Could not locate a complete lab directory in cloned repository or local fallback"
     print_info "Checked path: $REPO_DIR/$LAB_REL_PATH"
+    print_info "Fallback branch: $REPO_FALLBACK_BRANCH"
     print_info "Configured repository URL: $REPO_URL"
     exit 1
 fi
@@ -385,7 +470,12 @@ print_header "🔧 Step 9: Running Setup Verification"
 ################################################################################
 
 print_info "Running setup verification script as '$STUDENT_USER'..."
-sudo -u "$STUDENT_USER" bash -lc "cd '$LAB_DIR' && node scripts/verify-setup.js"
+if sudo -u "$STUDENT_USER" bash -lc "cd '$LAB_DIR' && node scripts/verify-setup.js"; then
+    print_success "Setup verification passed"
+else
+    print_warning "Setup verification reported pending runtime steps (expected before init/deploy)"
+    print_info "After login run: cd ~/lab4-blockchain-defi && npm run init:student -- --student-id <id> && ./start-ganache.sh && npm run deploy:all && npm run verify-setup"
+fi
 
 ################################################################################
 print_header "🎨 Step 10: Creating Desktop Shortcuts"
@@ -483,6 +573,7 @@ print_info "Password: $STUDENT_PASS"
 print_info "Lab path: $LAB_DIR"
 print_info "Repository path: $REPO_DIR"
 print_info "Repository branch: $REPO_BRANCH"
+print_info "Repository fallback branch: $REPO_FALLBACK_BRANCH"
 
 ################################################################################
 print_header "🧹 Step 12: Cleanup and Optimization"
