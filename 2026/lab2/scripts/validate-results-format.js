@@ -213,7 +213,7 @@ function validateChallenge2(root) {
         pushError(
           errors,
           "contracts/SimpleVault.sol",
-          `must contain challenge2PatchChecksum set to (q6ContractPatchCode % 97) + 3 = ${expectedChecksum.toString()}`
+          `must contain challenge2PatchChecksum set to (q6ContractPatchCode % 97) + 3`
         );
       }
     }

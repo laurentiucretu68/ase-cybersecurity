@@ -12,11 +12,18 @@ La finalul laboratorului vei sti:
 ## Resurse
 
 - [THEORY.md](THEORY.md) — concepte teoretice: blockchain, Ethereum, smart contracts, reentrancy
-- [VERIFY-FLOW.md](VERIFY-FLOW.md) — ghid complet de verificare end-to-end (pentru instructor)
 
 ---
 
 ## Setup
+
+### User recomandat in laborator
+
+Pentru toate comenzile din acest laborator foloseste userul:
+- username: `student`
+- parola: `cybersec2026`
+
+Ruleaza comenzile din terminalul deschis pe acest user.
 
 ### Varianta 1: Setup automat (VM laborator)
 
@@ -41,7 +48,7 @@ npm install
 ### Initializare student + deploy
 
 ```bash
-npm run init:student -- --student-id <email_ase_sau_matricol>
+npm run init:student -- --student-number <1-100>
 ./start-ganache.sh
 npm run deploy:all
 npm run verify-setup
@@ -102,7 +109,7 @@ npm run trace:funds -- <tx_hash> 100
 npm run verify-setup
 
 # Re-generate student instance
-npm run init:student -- --student-id <id> --force
+npm run init:student -- --student-number <1-100> --force
 ```
 
 ---
@@ -122,21 +129,3 @@ cp submission-templates/challenge2-results.template.json student/submissions/cha
 ```
 
 ---
-
-## Troubleshooting
-
-| Problema | Solutie |
-|----------|---------|
-| Ganache nu e detectat | `./start-ganache.sh` apoi `npm run verify-setup` |
-| Apar 10 conturi in GUI | Inchide GUI, porneste din nou: `./start-ganache.sh` |
-| `deploy:all` esueaza | Verifica: `npm run init:student -- --student-id <id>` apoi `./start-ganache.sh` |
-| `npm run attack` esueaza | Verifica ca Ganache ruleaza si vault-ul e deployed: `npm run deploy:vault` |
-| Validarea esueaza | Verifica formatul: adrese `0x...`, ETH cu 4/6 zecimale, pattern-uri lowercase |
-
----
-
-## Important
-
-- foloseste doar reteaua locala Ganache;
-- nu ataca retele reale/publice;
-- tehnicile sunt strict educationale.
