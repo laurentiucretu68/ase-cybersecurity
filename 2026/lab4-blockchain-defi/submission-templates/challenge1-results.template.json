@@ -1,0 +1,16 @@
+{
+  "challenge": "challenge1-forensics",
+  "studentId": "<id>",
+  "instanceId": "lab4-...",
+  "answers": {
+    "initialTransactionHash": "0x...",
+    "hopTransactionHashes": ["0x...", "0x...", "0x..."],
+    "firstDestinationAddress": "0x...",
+    "intermediateHopCount": 0,
+    "finalAddress": "0x...",
+    "totalTimeSeconds": 0,
+    "totalGasFeeWei": "0",
+    "initialInputHex": "0x...",
+    "decodedMessage": "CTF-..."
+  }
+}

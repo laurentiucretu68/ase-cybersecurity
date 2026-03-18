@@ -68,5 +68,6 @@ npm run test:all
 ## Resurse
 
 - [GETTING_STARTED.md](GETTING_STARTED.md)
+- [THEORY.md](THEORY.md)
 - [vm-setup/README.md](vm-setup/README.md)
 

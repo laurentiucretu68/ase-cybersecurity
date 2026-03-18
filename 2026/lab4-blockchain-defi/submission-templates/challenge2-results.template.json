@@ -1,0 +1,20 @@
+{
+  "challenge": "challenge2-reentrancy",
+  "studentId": "<id>",
+  "instanceId": "lab4-...",
+  "answers": {
+    "q1VulnerableFunction": "<string>",
+    "q2SecondVulnerableFunction": "<string>",
+    "q3ExternalCallLine": "<solidity_line>",
+    "q4PostCallStateUpdates": [
+      "<line_1>",
+      "<line_2>"
+    ],
+    "q5VulnerabilityPattern": "<token>",
+    "q6VaultAddress": "0x...",
+    "q7InitialVaultBalanceEth": "0.0000",
+    "q8AttackerContractAddress": "0x...",
+    "q9FinalVaultBalanceEth": "0.0000",
+    "q10RemediationPattern": "<token>"
+  }
+}
