@@ -4,6 +4,22 @@
 
 ## Laboratoare
 
+### 🔐 [Lab 1: Elemente de Criptografie](lab1/readme.md)
+
+**Durată**: 2 ore
+**Dificultate**: Începător
+
+Introducere în criptografie folosind OpenSSL — criptare simetrică, asimetrică și semnături digitale:
+
+- 🔑 **Criptare simetrică (AES)** — Generarea cheilor, criptarea și decriptarea fișierelor
+- 🔐 **Criptare asimetrică (RSA)** — Perechi de chei publice/private, criptare end-to-end
+- ✍️ **Semnături digitale (ECDSA)** — Verificarea autenticității și integrității datelor
+- 📝 [Temă Practică](lab1/tema.md)
+
+**Tehnologii**: OpenSSL, AES-256, RSA, ECDSA, SHA-256
+
+[➡️ Accesează Lab 1](lab1/readme.md)
+
 ### [Lab 2: The DeFi Heist - Blockchain Security & Smart Contracts](lab2/)
 
 **Durată**: 3-4 ore  
@@ -16,7 +32,7 @@ Securitatea blockchain-ului și vulnerabilitățile smart contracts prin scenari
 
 **Tehnologii**: Ethereum, Solidity, Hardhat, Ganache
 
-[Accesează Lab 2](lab2/)
+[➡️ Accesează Lab 2](lab2/)
 
 ---
 
