@@ -58,8 +58,7 @@ npm run deploy:vault
 
 1. `student/submissions/challenge1-results.json`
 2. `student/submissions/challenge2-results.json`
-3. `contracts/MyVaultAttacker.sol`
-4. Validare format:
+3. Validare format:
 
 ```bash
 npm run validate:results

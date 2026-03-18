@@ -80,6 +80,4 @@ npm run init:student -- --student-id <id>
 
 1. `student/submissions/challenge1-results.json`
 2. `student/submissions/challenge2-results.json`
-3. `contracts/MyVaultAttacker.sol`
-4. validare format:
-   `npm run validate:results`
+3. validare format: `npm run validate:results`

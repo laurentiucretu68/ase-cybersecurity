@@ -14,6 +14,7 @@
     "deploy:forensics": "npm run deploy:challenge1",
     "inspect:tx": "node scripts/inspect-transaction.js",
     "trace:funds": "node scripts/trace-funds.js",
+    "attack": "hardhat run scripts/run-attack.js --network localhost",
     "console": "hardhat console --network localhost",
     "verify-setup": "node scripts/verify-setup.js",
     "validate:results": "node scripts/validate-results-format.js",

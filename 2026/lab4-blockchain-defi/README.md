@@ -32,7 +32,7 @@ Flux recomandat pentru studenti:
 
 ### Challenge 2: Reentrancy Attack (50p)
 - documentatie: `challenges/challenge2-reentrancy.md`
-- livrabile: `student/submissions/challenge2-results.json` + `contracts/MyVaultAttacker.sol`
+- livrabil: `student/submissions/challenge2-results.json`
 
 ## Punctaj (nou)
 
@@ -63,8 +63,7 @@ npm run test:all
 
 1. `student/submissions/challenge1-results.json`
 2. `student/submissions/challenge2-results.json`
-3. `contracts/MyVaultAttacker.sol`
-4. validare format: `npm run validate:results`
+3. validare format: `npm run validate:results`
 
 ## Important
 

