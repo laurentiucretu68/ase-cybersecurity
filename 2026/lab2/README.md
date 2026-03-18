@@ -2,6 +2,12 @@
 
 > Rol: esti Security Auditor la EtherBank. Scopul laboratorului este sa investighezi fluxuri on-chain si sa exploatezi controlat o vulnerabilitate de tip reentrancy, intr-un mediu local.
 
+## Descarcare masina virtuala (obligatoriu)
+
+Inainte de setup, descarca masina virtuala de laborator de aici:
+
+[Google Drive - Lab 2 VM](https://drive.google.com/drive/folders/1sJwEBAlUX0DbAUMGGeNnWIvd9u2-sEIC?usp=drive_link)
+
 ## Obiective
 
 La finalul laboratorului vei sti:
