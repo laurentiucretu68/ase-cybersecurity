@@ -2,33 +2,22 @@
 
 > Materiale pentru ediția 2026 a laboratorului de **Cybersecurity**
 
-## 📚 Classroom
+## Laboratoare
 
-- **Google Classroom**: Cod de înscriere: _TBA_
-- **Link**: _TBA_
+### [Lab 2: The DeFi Heist - Blockchain Security & Smart Contracts](lab2/)
 
-## 🎓 Prezentări
-
-_În curs de actualizare_
-
-## 📋 Laboratoare
-
-### 🔐 [Lab 4: The DeFi Heist - Blockchain Security & Smart Contracts](lab4-blockchain-defi/)
-
-**Status**: ✅ Complet  
 **Durată**: 3-4 ore  
-**Dificultate**: Intermediate → Advanced
+**Dificultate**: Beginner-Intermediate
 
-Învață securitatea blockchain-ului și vulnerabilitățile smart contracts prin scenarii practice de tip CTF:
+Securitatea blockchain-ului și vulnerabilitățile smart contracts prin scenarii practice:
 
-- 🔍 **Challenge 1**: Blockchain Forensics - Urmărirea tranzacțiilor și investigația on-chain
-- ⚔️ **Challenge 2**: Reentrancy Attack - Exploatarea celei mai periculoase vulnerabilități DeFi
-- 🔑 **Challenge 3**: Access Control & Private Keys - Securitatea cheilor criptografice
+- **Challenge 1**: Blockchain Forensics — urmărirea tranzacțiilor și investigație on-chain
+- **Challenge 2**: Reentrancy Attack — exploatarea și înțelegerea celei mai cunoscute vulnerabilități DeFi
 
-**Tehnologii**: Ethereum, Solidity, Hardhat, Ganache, MetaMask
+**Tehnologii**: Ethereum, Solidity, Hardhat, Ganache
 
-[➡️ Accesează Lab 4](lab4-blockchain-defi/)
+[Accesează Lab 2](lab2/)
 
 ---
 
-**Note**: Acest director va conține materialele pentru ediția 2026. Consultă [ediția 2025](../2025/) pentru referințe la materialele anterioare.
+**Note**: Consultă [ediția 2025](../2025/) pentru referințe la materialele anterioare.

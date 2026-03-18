@@ -396,7 +396,7 @@ async function main() {
     console.log("- Run: npm install");
     console.log("- Run: npm run init:student -- --student-number <1-100>");
     console.log("- Start Ganache: ./start-ganache.sh");
-    console.log("- Ensure you're in the lab4-blockchain-defi directory");
+    console.log("- Ensure you're in the lab2 directory");
   }
 
   console.log("=".repeat(60));

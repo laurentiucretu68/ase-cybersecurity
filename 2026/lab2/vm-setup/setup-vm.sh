@@ -45,7 +45,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 REPO_URL="https://github.com/laurentiucretu68/ase-cybersecurity.git"  # UPDATE THIS!
-REPO_BRANCH="beta"  # Branch to clone for lab4
+REPO_BRANCH="beta"  # Branch to clone for lab2
 REPO_FALLBACK_BRANCH="main"  # Fallback branch if configured one is incomplete
 REPO_SECONDARY_FALLBACK_BRANCH="master"  # Secondary fallback branch
 NODE_MAJOR="20"
@@ -54,8 +54,8 @@ STUDENT_USER="student"
 STUDENT_PASS="cybersec2026"
 STUDENT_HOME="/home/$STUDENT_USER"
 REPO_DIR="$STUDENT_HOME/ase-cybersecurity"
-LAB_DIR="$STUDENT_HOME/lab4-blockchain-defi"
-LAB_REL_PATH="2026/lab4-blockchain-defi"
+LAB_DIR="$STUDENT_HOME/lab2"
+LAB_REL_PATH="2026/lab2"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
 GANACHE_GUI_VERSION="2.7.1"
@@ -214,7 +214,7 @@ const INSTANCE_MANIFEST_PATH = path.join(STUDENT_DIR, "manifest.sig");
 const DEFAULT_INSTANCE = {
   version: 1,
   studentId: "default-student",
-  instanceId: "lab4-default",
+  instanceId: "lab2-default",
   seedHash: "",
   generatedAt: "",
   chain: {
@@ -537,12 +537,12 @@ if [ "${LAB_INTERNAL_GANACHE_GUI_LAUNCH:-0}" = "1" ]; then
     exec /usr/local/bin/ganache-gui-app "$@"
 fi
 
-if [ -d "$HOME/lab4-blockchain-defi" ]; then
-    exec /bin/bash -lc "cd ~/lab4-blockchain-defi && ./start-ganache.sh"
+if [ -d "$HOME/lab2" ]; then
+    exec /bin/bash -lc "cd ~/lab2 && ./start-ganache.sh"
 fi
 
-if [ -d "$HOME/ase-cybersecurity/2026/lab4-blockchain-defi" ]; then
-    exec /bin/bash -lc "cd ~/ase-cybersecurity/2026/lab4-blockchain-defi && ./start-ganache.sh"
+if [ -d "$HOME/ase-cybersecurity/2026/lab2" ]; then
+    exec /bin/bash -lc "cd ~/ase-cybersecurity/2026/lab2 && ./start-ganache.sh"
 fi
 
 exec /usr/local/bin/ganache-gui-app "$@"
@@ -635,7 +635,7 @@ fi
 LAB_SOURCE_DIR="$REPO_DIR/$LAB_REL_PATH"
 if ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
     print_warning "Expected lab path not found: $LAB_SOURCE_DIR"
-    LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab4-blockchain-defi" | head -1)
+    LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab2" | head -1)
 fi
 
 if sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
@@ -662,7 +662,7 @@ if [ "$LAB_SOURCE_OK" != "true" ]; then
         if try_checkout_branch "$fallback_branch"; then
             LAB_SOURCE_DIR="$REPO_DIR/$LAB_REL_PATH"
             if ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
-                LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab4-blockchain-defi" | head -1)
+                LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab2" | head -1)
             fi
 
             if sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
@@ -734,7 +734,7 @@ if sudo -u "$STUDENT_USER" bash -lc "cd '$LAB_DIR' && node scripts/verify-setup.
     print_success "Setup verification passed"
 else
     print_warning "Setup verification reported pending runtime steps (expected before init/deploy)"
-    print_info "After login run: cd ~/lab4-blockchain-defi && npm run init:student -- --student-number <1-100> && ./start-ganache.sh && npm run deploy:all && npm run verify-setup"
+    print_info "After login run: cd ~/lab2 && npm run init:student -- --student-number <1-100> && ./start-ganache.sh && npm run deploy:all && npm run verify-setup"
 fi
 
 ################################################################################
@@ -754,7 +754,7 @@ Version=1.0
 Type=Application
 Name=Start Ganache
 Comment=Start Ganache blockchain for DeFi Heist Lab
-Exec=gnome-terminal -- bash -c "cd ~/lab4-blockchain-defi && ./start-ganache.sh; exec bash"
+Exec=gnome-terminal -- bash -c "cd ~/lab2 && ./start-ganache.sh; exec bash"
 Icon=utilities-terminal
 Terminal=false
 Categories=Development;
@@ -782,7 +782,7 @@ Version=1.0
 Type=Application
 Name=Ganache Autostart
 Comment=Start Ganache automatically for DeFi Heist Lab
-Exec=/bin/bash -lc "cd ~/lab4-blockchain-defi && LAB_AUTO_START=1 ./start-ganache.sh >> ~/ganache.log 2>&1"
+Exec=/bin/bash -lc "cd ~/lab2 && LAB_AUTO_START=1 ./start-ganache.sh >> ~/ganache.log 2>&1"
 Terminal=false
 X-GNOME-Autostart-enabled=true
 Categories=Development;
@@ -853,10 +853,10 @@ echo "  2. Login as '$STUDENT_USER'"
 echo "  3. Run: npm run init:student -- --student-number <1-100>"
 echo "  4. Wait for next login autostart or run ./start-ganache.sh once"
 echo "  5. Double-click 'Open-Lab' to open VS Code"
-echo "  6. Use GETTING_STARTED.md for the lab flow"
+echo "  6. Use README.md for the lab flow"
 echo ""
 echo "📖 Manual start commands:"
-echo "  cd ~/lab4-blockchain-defi"
+echo "  cd ~/lab2"
 echo "  npm run init:student -- --student-number <1-100>"
 echo "  ./start-ganache.sh              # Open the preconfigured Ganache GUI"
 echo "  LAB_GANACHE_MODE=cli ./start-ganache.sh  # Fallback CLI mode"

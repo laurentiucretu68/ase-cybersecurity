@@ -1,12 +1,14 @@
 {
   "challenge": "challenge2-reentrancy",
   "studentId": "<id>",
-  "instanceId": "lab4-...",
+  "instanceId": "lab2-...",
   "answers": {
+    "q1VulnerabilityPattern": "<token>",
+    "q2RemediationPattern": "<token>",
     "q3VaultAddress": "0x...",
     "q4InitialVaultBalanceEth": "0.0000",
     "q5AttackerContractAddress": "0x...",
     "q6FinalVaultBalanceEth": "0.0000",
-    "q7ContractPatchCode": "1"
+    "q7AttackGasFeeEth": "0.000000"
   }
 }

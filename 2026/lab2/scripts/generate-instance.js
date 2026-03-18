@@ -213,7 +213,7 @@ function deriveStudentIdFromNumber(studentNumber) {
   const padded = String(studentNumber).padStart(3, "0");
   const hash = crypto
     .createHash("sha256")
-    .update(`lab4-student-number:${padded}`)
+    .update(`lab2-student-number:${padded}`)
     .digest("hex")
     .slice(0, 8);
 
@@ -398,10 +398,15 @@ function main() {
   instance.version = 1;
   instance.studentNumber = studentNumber;
   instance.studentId = studentId;
-  instance.instanceId = `lab4-${seedHash.slice(0, 12)}`;
+  instance.instanceId = `lab2-${seedHash.slice(0, 12)}`;
   instance.seedHash = seedHash;
   instance.generatedAt = new Date().toISOString();
   instance.chain.mnemonic = mnemonic;
+
+  const chainSeed = crypto.createHash("sha256").update(`chain:${seedHash}`).digest();
+  instance.chain.defaultBalanceEth = String(98 + chainSeed[0] % 5);
+  instance.chain.gasPriceWei = String(18000000000 + (chainSeed[1] % 5) * 1000000000);
+  instance.chain.gasLimit = String(5800000 + (chainSeed[2] % 6) * 100000);
   instance.challenge1 = buildChallenge1(rng, catalogMessage);
   instance.challenge2 = buildChallenge2(rng);
   instance.grading = {

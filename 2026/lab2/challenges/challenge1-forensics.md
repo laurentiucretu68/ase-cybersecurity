@@ -132,7 +132,7 @@ Folosește doar:
 ## Setup
 
 ```bash
-cd ~/lab4-blockchain-defi
+cd ~/lab2
 npm run init:student -- --student-number <1-100>
 ./start-ganache.sh
 npm run deploy:challenge1
@@ -253,7 +253,7 @@ Template complet:
 {
   "challenge": "challenge1-forensics",
   "studentId": "<id>",
-  "instanceId": "lab4-...",
+  "instanceId": "lab2-...",
   "answers": {
     "initialTransactionHash": "0x...",
     "hopTransactionHashes": ["0x...", "0x...", "0x..."],
