@@ -47,6 +47,7 @@ NC='\033[0m' # No Color
 REPO_URL="https://github.com/laurentiucretu68/ase-cybersecurity.git"  # UPDATE THIS!
 REPO_BRANCH="beta"  # Branch to clone for lab4
 REPO_FALLBACK_BRANCH="main"  # Fallback branch if configured one is incomplete
+REPO_SECONDARY_FALLBACK_BRANCH="master"  # Secondary fallback branch
 NODE_MAJOR="20"
 RECLONE_IF_EXISTS="false"
 STUDENT_USER="student"
@@ -177,6 +178,237 @@ try_checkout_branch() {
 
     print_warning "Could not checkout fallback branch '$target_branch'"
     return 1
+}
+
+ensure_instance_config_file() {
+    local source_dir="$1"
+    local target_file="$source_dir/scripts/lib/instance-config.js"
+
+    if [ -z "$source_dir" ] || ! sudo -u "$STUDENT_USER" test -d "$source_dir"; then
+        return 1
+    fi
+
+    if sudo -u "$STUDENT_USER" test -f "$target_file"; then
+        return 0
+    fi
+
+    print_warning "Missing scripts/lib/instance-config.js. Creating compatibility file..."
+    sudo -u "$STUDENT_USER" mkdir -p "$source_dir/scripts/lib"
+
+    cat << 'EOF' | sudo -u "$STUDENT_USER" tee "$target_file" > /dev/null
+const fs = require("fs");
+const path = require("path");
+const dotenv = require("dotenv");
+const { ethers } = require("ethers");
+
+const DEFAULT_MNEMONIC = "test test test test test test test test test test test junk";
+const HD_PATH_PREFIX = "m/44'/60'/0'/0";
+
+const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+const STUDENT_DIR = path.join(PROJECT_ROOT, "student");
+
+const INSTANCE_JSON_PATH = path.join(STUDENT_DIR, "instance.json");
+const INSTANCE_ENV_PATH = path.join(STUDENT_DIR, "instance.env");
+const INSTANCE_MANIFEST_PATH = path.join(STUDENT_DIR, "manifest.sig");
+
+const DEFAULT_INSTANCE = {
+  version: 1,
+  studentId: "default-student",
+  instanceId: "lab4-default",
+  seedHash: "",
+  generatedAt: "",
+  chain: {
+    chainId: 1337,
+    port: 7545,
+    accounts: 10,
+    defaultBalanceEth: "100",
+    gasPriceWei: "20000000000",
+    gasLimit: "6000000",
+    mnemonic: DEFAULT_MNEMONIC
+  },
+  challenge1: {
+    companyAccountIndex: 0,
+    hopAccountIndices: [1, 2, 3],
+    transferAmountsEth: ["90.0", "89.5", "89.0"],
+    message: "CTF-DEFAULT: follow-the-money",
+    messageHex: ethers.utils.hexlify(ethers.utils.toUtf8Bytes("CTF-DEFAULT: follow-the-money"))
+  },
+  challenge2: {
+    depositorAccountIndices: [1, 2, 3, 4],
+    initialDepositsEth: ["30", "25", "20", "25"],
+    attackDepositEth: "1.5",
+    maxAttacks: 5
+  },
+  grading: {
+    token: "CTF-DEFAULT"
+  }
+};
+
+function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function ensureDir(dirPath) {
+  fs.mkdirSync(dirPath, { recursive: true });
+}
+
+function saveJson(targetPath, data) {
+  ensureDir(path.dirname(targetPath));
+  fs.writeFileSync(targetPath, `${JSON.stringify(data, null, 2)}\n`);
+}
+
+function saveText(targetPath, content) {
+  ensureDir(path.dirname(targetPath));
+  fs.writeFileSync(targetPath, content.endsWith("\n") ? content : `${content}\n`);
+}
+
+function isPlainObject(value) {
+  return value && typeof value === "object" && !Array.isArray(value);
+}
+
+function mergeDeep(base, override) {
+  if (Array.isArray(base)) {
+    return Array.isArray(override) ? [...override] : [...base];
+  }
+
+  if (!isPlainObject(base)) {
+    return override === undefined ? base : override;
+  }
+
+  const result = { ...base };
+  const source = isPlainObject(override) ? override : {};
+
+  Object.keys(source).forEach((key) => {
+    const baseValue = result[key];
+    const overrideValue = source[key];
+
+    if (Array.isArray(baseValue)) {
+      result[key] = Array.isArray(overrideValue) ? [...overrideValue] : [...baseValue];
+      return;
+    }
+
+    if (isPlainObject(baseValue)) {
+      result[key] = mergeDeep(baseValue, overrideValue);
+      return;
+    }
+
+    result[key] = overrideValue === undefined ? baseValue : overrideValue;
+  });
+
+  return result;
+}
+
+function parseMaybeInt(value, fallback) {
+  if (value === undefined || value === null || value === "") {
+    return fallback;
+  }
+
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function parseInstanceEnv(envPath = INSTANCE_ENV_PATH) {
+  if (!fs.existsSync(envPath)) {
+    return null;
+  }
+
+  const raw = fs.readFileSync(envPath, "utf8");
+  const env = dotenv.parse(raw);
+
+  return {
+    version: DEFAULT_INSTANCE.version,
+    studentId: env.LAB_STUDENT_ID || DEFAULT_INSTANCE.studentId,
+    instanceId: env.LAB_INSTANCE_ID || DEFAULT_INSTANCE.instanceId,
+    chain: {
+      chainId: parseMaybeInt(env.LAB_CHAIN_ID, DEFAULT_INSTANCE.chain.chainId),
+      port: parseMaybeInt(env.LAB_PORT, DEFAULT_INSTANCE.chain.port),
+      accounts: parseMaybeInt(env.LAB_ACCOUNTS, DEFAULT_INSTANCE.chain.accounts),
+      defaultBalanceEth:
+        env.LAB_DEFAULT_BALANCE_ETH || DEFAULT_INSTANCE.chain.defaultBalanceEth,
+      gasPriceWei: env.LAB_GAS_PRICE_WEI || DEFAULT_INSTANCE.chain.gasPriceWei,
+      gasLimit: env.LAB_GAS_LIMIT || DEFAULT_INSTANCE.chain.gasLimit,
+      mnemonic: env.LAB_MNEMONIC || DEFAULT_INSTANCE.chain.mnemonic
+    }
+  };
+}
+
+function readInstanceJson(instancePath = INSTANCE_JSON_PATH) {
+  if (!fs.existsSync(instancePath)) {
+    return null;
+  }
+
+  return JSON.parse(fs.readFileSync(instancePath, "utf8"));
+}
+
+function loadInstance(options = {}) {
+  const { required = false } = options;
+  const defaultInstance = deepClone(DEFAULT_INSTANCE);
+  const jsonInstance = readInstanceJson();
+
+  if (jsonInstance) {
+    return mergeDeep(defaultInstance, jsonInstance);
+  }
+
+  if (required) {
+    throw new Error(
+      `Missing required instance file at ${INSTANCE_JSON_PATH}. Run: npm run init:student -- --student-id <id>`
+    );
+  }
+
+  const envInstance = parseInstanceEnv();
+  if (envInstance) {
+    return mergeDeep(defaultInstance, envInstance);
+  }
+
+  return defaultInstance;
+}
+
+function writeInstanceFiles({ instance, envFileContent, manifest }) {
+  if (!instance || !envFileContent || !manifest) {
+    throw new Error("writeInstanceFiles requires instance, envFileContent, and manifest.");
+  }
+
+  ensureDir(STUDENT_DIR);
+  saveJson(INSTANCE_JSON_PATH, instance);
+  saveText(INSTANCE_ENV_PATH, envFileContent);
+  saveText(INSTANCE_MANIFEST_PATH, manifest);
+}
+
+function getAccountFromMnemonic(mnemonic, index = 0) {
+  const accountIndex = Number(index);
+  if (!Number.isInteger(accountIndex) || accountIndex < 0) {
+    throw new Error(`Invalid mnemonic account index: ${index}`);
+  }
+
+  const derivationPath = `${HD_PATH_PREFIX}/${accountIndex}`;
+  const wallet = ethers.Wallet.fromMnemonic(mnemonic, derivationPath);
+
+  return {
+    address: wallet.address,
+    privateKey: wallet.privateKey,
+    mnemonic,
+    derivationPath
+  };
+}
+
+module.exports = {
+  DEFAULT_INSTANCE,
+  PROJECT_ROOT,
+  STUDENT_DIR,
+  INSTANCE_JSON_PATH,
+  INSTANCE_ENV_PATH,
+  INSTANCE_MANIFEST_PATH,
+  deepClone,
+  ensureDir,
+  saveJson,
+  writeInstanceFiles,
+  loadInstance,
+  getAccountFromMnemonic
+};
+EOF
+
+    print_success "Created scripts/lib/instance-config.js"
+    return 0
 }
 
 ################################################################################
@@ -404,22 +636,43 @@ if ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
     LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab4-blockchain-defi" | head -1)
 fi
 
+if sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
+    ensure_instance_config_file "$LAB_SOURCE_DIR" || true
+fi
+
 LAB_SOURCE_OK=false
 if validate_lab_source_dir "$LAB_SOURCE_DIR"; then
     LAB_SOURCE_OK=true
 fi
 
-if [ "$LAB_SOURCE_OK" != "true" ] && [ "$REPO_BRANCH" != "$REPO_FALLBACK_BRANCH" ]; then
-    if try_checkout_branch "$REPO_FALLBACK_BRANCH"; then
-        LAB_SOURCE_DIR="$REPO_DIR/$LAB_REL_PATH"
-        if ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
-            LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab4-blockchain-defi" | head -1)
+REPO_EFFECTIVE_BRANCH="$REPO_BRANCH"
+
+if [ "$LAB_SOURCE_OK" != "true" ]; then
+    for fallback_branch in "$REPO_FALLBACK_BRANCH" "$REPO_SECONDARY_FALLBACK_BRANCH"; do
+        if [ "$LAB_SOURCE_OK" = "true" ]; then
+            break
         fi
 
-        if validate_lab_source_dir "$LAB_SOURCE_DIR"; then
-            LAB_SOURCE_OK=true
+        if [ -z "$fallback_branch" ] || [ "$fallback_branch" = "$REPO_BRANCH" ]; then
+            continue
         fi
-    fi
+
+        if try_checkout_branch "$fallback_branch"; then
+            LAB_SOURCE_DIR="$REPO_DIR/$LAB_REL_PATH"
+            if ! sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
+                LAB_SOURCE_DIR=$(sudo -u "$STUDENT_USER" find "$REPO_DIR" -maxdepth 4 -type d -name "lab4-blockchain-defi" | head -1)
+            fi
+
+            if sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
+                ensure_instance_config_file "$LAB_SOURCE_DIR" || true
+            fi
+
+            if validate_lab_source_dir "$LAB_SOURCE_DIR"; then
+                LAB_SOURCE_OK=true
+                REPO_EFFECTIVE_BRANCH="$fallback_branch"
+            fi
+        fi
+    done
 fi
 
 if [ "$LAB_SOURCE_OK" != "true" ]; then
@@ -432,8 +685,13 @@ if [ "$LAB_SOURCE_OK" != "true" ]; then
         sudo chown -R "$STUDENT_USER:$STUDENT_USER" "$REPO_DIR"
         LAB_SOURCE_DIR="$REPO_DIR/$LAB_REL_PATH"
 
+        if sudo -u "$STUDENT_USER" test -d "$LAB_SOURCE_DIR"; then
+            ensure_instance_config_file "$LAB_SOURCE_DIR" || true
+        fi
+
         if validate_lab_source_dir "$LAB_SOURCE_DIR"; then
             LAB_SOURCE_OK=true
+            REPO_EFFECTIVE_BRANCH="local-fallback"
         fi
     fi
 fi
@@ -441,7 +699,7 @@ fi
 if [ "$LAB_SOURCE_OK" != "true" ]; then
     print_error "Could not locate a complete lab directory in cloned repository or local fallback"
     print_info "Checked path: $REPO_DIR/$LAB_REL_PATH"
-    print_info "Fallback branch: $REPO_FALLBACK_BRANCH"
+    print_info "Fallback branches: $REPO_FALLBACK_BRANCH, $REPO_SECONDARY_FALLBACK_BRANCH"
     print_info "Configured repository URL: $REPO_URL"
     exit 1
 fi
@@ -574,6 +832,8 @@ print_info "Lab path: $LAB_DIR"
 print_info "Repository path: $REPO_DIR"
 print_info "Repository branch: $REPO_BRANCH"
 print_info "Repository fallback branch: $REPO_FALLBACK_BRANCH"
+print_info "Repository secondary fallback branch: $REPO_SECONDARY_FALLBACK_BRANCH"
+print_info "Repository effective branch: ${REPO_EFFECTIVE_BRANCH:-$REPO_BRANCH}"
 
 ################################################################################
 print_header "🧹 Step 12: Cleanup and Optimization"
