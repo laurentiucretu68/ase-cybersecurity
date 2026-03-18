@@ -1,37 +1,37 @@
-﻿# Verificare completÄƒ a flow-ului â€” Pas cu pas
+# Verificare completă a flow-ului — Pas cu pas
 
-Acest document conÈ›ine **toate comenzile** necesare pentru a verifica end-to-end cÄƒ laboratorul funcÈ›ioneazÄƒ corect: de la instalare pÃ¢nÄƒ la validarea rezultatelor ambelor challenge-uri.
+Acest document conține **toate comenzile** necesare pentru a verifica end-to-end că laboratorul funcționează corect: de la instalare până la validarea rezultatelor ambelor challenge-uri.
 
-RuleazÄƒ fiecare secÈ›iune Ã®n ordine. La fiecare pas, verificÄƒ output-ul aÈ™teptat.
+Rulează fiecare secțiune în ordine. La fiecare pas, verifică output-ul așteptat.
 
 ---
 
-## Pasul 0: PregÄƒtire
+## Pasul 0: Pregătire
 
 ```bash
 cd 2026/lab4-blockchain-defi
 ```
 
-### 0.1 Instalare dependenÈ›e
+### 0.1 Instalare dependențe
 
 ```bash
 npm install
 ```
 
-**Output aÈ™teptat**: fÄƒrÄƒ erori, `node_modules/` creat.
+**Output așteptat**: fără erori, `node_modules/` creat.
 
-### 0.2 Verificare rapidÄƒ structurÄƒ
+### 0.2 Verificare rapidă structură
 
 ```bash
 ls contracts/ scripts/lib/ challenges/ submission-templates/ student/
 ```
 
-**Output aÈ™teptat**: fiÈ™ierele principale vizibile:
-- `contracts/` â†’ `SimpleVault.sol`, `VaultAttacker.sol`
-- `scripts/lib/` â†’ `instance-config.js`
-- `challenges/` â†’ `challenge1-forensics.md`, `challenge2-reentrancy.md`
-- `submission-templates/` â†’ `challenge1-results.template.json`, `challenge2-results.template.json`
-- `student/` â†’ `.gitkeep`, `submissions/`
+**Output așteptat**: fișierele principale vizibile:
+- `contracts/` → `SimpleVault.sol`, `VaultAttacker.sol`
+- `scripts/lib/` → `instance-config.js`
+- `challenges/` → `challenge1-forensics.md`, `challenge2-reentrancy.md`
+- `submission-templates/` → `challenge1-results.template.json`, `challenge2-results.template.json`
+- `student/` → `.gitkeep`, `submissions/`
 
 ### 0.3 Compilare Solidity
 
@@ -39,19 +39,19 @@ ls contracts/ scripts/lib/ challenges/ submission-templates/ student/
 npx hardhat compile
 ```
 
-**Output aÈ™teptat**: `Compiled N Solidity files successfully` (fÄƒrÄƒ erori).
+**Output așteptat**: `Compiled N Solidity files successfully` (fără erori).
 
 ---
 
-## Pasul 1: Generare instanÈ›Äƒ student
+## Pasul 1: Generare instanță student
 
 ```bash
 npm run init:student -- --student-number 42 --force
 ```
 
-**Output aÈ™teptat**:
+**Output așteptat**:
 ```
-[warn] Using default salt. ...
+[info] Using cohort seed: LAB4-COHORT-2026
 Instance generated successfully.
 student/instance.json: .../student/instance.json
 student/instance.env: .../student/instance.env
@@ -60,33 +60,33 @@ instance id: lab4-XXXXXXXXXXXX
 grading token: CTF-XXXXXXXXXXXX
 ```
 
-### Verificare fiÈ™iere generate
+### Verificare fișiere generate
 
 ```bash
 cat student/instance.env
 ```
 
-**VerificÄƒ**: `LAB_CHAIN_ID`, `LAB_PORT`, `LAB_MNEMONIC` sunt prezente.
+**Verifică**: `LAB_CHAIN_ID`, `LAB_PORT`, `LAB_MNEMONIC` sunt prezente.
 
 ```bash
 node -e "const i = require('./student/instance.json'); console.log('instanceId:', i.instanceId); console.log('challenge1 hops:', i.challenge1.hopAccountIndices.length); console.log('challenge2 depositors:', i.challenge2.depositorAccountIndices.length);"
 ```
 
-**Output aÈ™teptat**: instanceId valid, 3-5 hop-uri, 4 depositors.
+**Output așteptat**: instanceId valid, 3-10 hop-uri, 3-8 depositors.
 
 ---
 
 ## Pasul 2: Pornire Ganache
 
-### Varianta CLI (fÄƒrÄƒ GUI, recomandatÄƒ pentru testare)
+### Varianta CLI (fără GUI, recomandată pentru testare)
 
 ```bash
 LAB_GANACHE_MODE=cli ./start-ganache.sh
 ```
 
-**Output aÈ™teptat**: Ganache porneÈ™te pe port 7545, afiÈ™eazÄƒ conturile generate.
+**Output așteptat**: Ganache pornește pe port 7545, afișează conturile generate.
 
-> Ganache rÄƒmÃ¢ne activ Ã®n terminal. **Deschide un terminal nou** pentru paÈ™ii urmÄƒtori.
+> Ganache rămâne activ în terminal. **Deschide un terminal nou** pentru pașii următori.
 
 ### Verificare conectivitate (din terminalul nou)
 
@@ -100,7 +100,7 @@ curl -s -X POST http://127.0.0.1:7545 \
     });"
 ```
 
-**Output aÈ™teptat**: `Chain ID: 1337`
+**Output așteptat**: `Chain ID: 1337`
 
 ---
 
@@ -112,7 +112,7 @@ curl -s -X POST http://127.0.0.1:7545 \
 npm run deploy:challenge1
 ```
 
-**Output aÈ™teptat**:
+**Output așteptat**:
 
 ```
 Setting up Challenge 1 (Blockchain Forensics)
@@ -130,7 +130,7 @@ Initial tx hash: 0x...
 ls deployments/
 ```
 
-**Output aÈ™teptat**: `challenge1-data.json`
+**Output așteptat**: `challenge1-data.json`
 
 ```bash
 node -e "const d = require('./deployments/challenge1-data.json'); console.log('C1 initial tx:', d.initialTransactionHash); console.log('C1 transfers:', d.transferCount); console.log('C1 final dest:', d.finalDestination.address);"
@@ -144,9 +144,9 @@ node -e "const d = require('./deployments/challenge1-data.json'); console.log('C
 npm run verify-setup
 ```
 
-**Output aÈ™teptat**: toate check-urile `[OK]`, final `Setup verification PASSED!`
+**Output așteptat**: toate check-urile `[OK]`, final `Setup verification PASSED!`
 
-DacÄƒ vezi `[FAIL]` la `scripts/lib/instance-config.js`, modulul lipseÈ™te. DacÄƒ vezi `[WARN]` la deployments, ruleazÄƒ din nou `npm run deploy:challenge1`.
+Dacă vezi `[FAIL]` la `scripts/lib/instance-config.js`, modulul lipsește. Dacă vezi `[WARN]` la deployments, rulează din nou `npm run deploy:challenge1`.
 
 ---
 
@@ -154,7 +154,7 @@ DacÄƒ vezi `[FAIL]` la `scripts/lib/instance-config.js`, modulul lipseÈ™te.
 
 Aici parcurgem tot flow-ul de rezolvare al Challenge 1 folosind comenzile disponibile.
 
-### 5.1 ObÈ›ine datele de start
+### 5.1 Obține datele de start
 
 ```bash
 node -e "
@@ -173,13 +173,13 @@ d.transfers.forEach(t => {
 "
 ```
 
-### 5.2 InspecteazÄƒ tranzacÈ›ia iniÈ›ialÄƒ (cu input)
+### 5.2 Inspectează tranzacția inițială (cu input)
 
 ```bash
 npm run inspect:tx -- $(node -e "process.stdout.write(require('./deployments/challenge1-data.json').initialTransactionHash)") --show-input
 ```
 
-**Output aÈ™teptat**: detalii tranzacÈ›ie + `Input data: 0x...` + `Input ASCII: CTF-...`
+**Output așteptat**: detalii tranzacție + `Input data: 0x...` + `Input ASCII: <text din catalog>`
 
 ### 5.3 Trace fonduri automat
 
@@ -187,9 +187,9 @@ npm run inspect:tx -- $(node -e "process.stdout.write(require('./deployments/cha
 npm run trace:funds -- $(node -e "process.stdout.write(require('./deployments/challenge1-data.json').initialTransactionHash)") 100
 ```
 
-**Output aÈ™teptat**: toate hop-urile listate cu adrese, valori, gas fees È™i destinaÈ›ia finalÄƒ.
+**Output așteptat**: toate hop-urile listate cu adrese, valori, gas fees și destinația finală.
 
-### 5.4 Generare rÄƒspunsuri Challenge 1
+### 5.4 Generare răspunsuri Challenge 1
 
 ```bash
 node -e "
@@ -199,7 +199,7 @@ const instance = require('./student/instance.json');
 const hopHashes = d.transfers.map(t => t.txHash);
 const firstDest = d.transfers[0].to;
 const finalAddr = d.transfers[d.transfers.length - 1].to;
-const interHops = d.transfers.length - 2; // fÄƒrÄƒ prima È™i ultima
+const interHops = d.transfers.length - 2; // fără prima și ultima
 
 let totalGas = BigInt(0);
 d.transfers.forEach(t => {
@@ -236,7 +236,7 @@ console.log(JSON.stringify(result, null, 2));
 npm run validate:results -- --challenge1
 ```
 
-**Output aÈ™teptat**: `[OK] Challenge 1: ...` + `Submission format validation passed.`
+**Output așteptat**: `[OK] Challenge 1: ...` + `Submission format validation passed.`
 
 ---
 
@@ -263,20 +263,21 @@ d.deposits.forEach(dep => {
 "
 ```
 
-### 6.2 RÄƒspunsuri Q1-Q2 (analizÄƒ cod)
-
-Vin din citirea `contracts/SimpleVault.sol`:
-
-- **Q1**: `reentrancy` (tipul vulnerabilitÄƒÈ›ii)
-- **Q2**: `checks-effects-interactions` (pattern-ul de remediere)
-
-### 6.3 Rulare atac (Q3-Q6)
+### 6.2 Rulare atac (Q3-Q6)
 
 ```bash
 npm run attack
 ```
 
-**Output aÈ™teptat**: vault-ul golit, valorile Q3-Q6 afiÈ™ate + salvate Ã®n `deployments/attack-results.json`.
+**Output asteptat**: vault-ul golit, valorile Q3-Q6 afisate + salvate in `deployments/attack-results.json`.
+
+### 6.3 Aplicare patch contract (Q7)
+
+Editeaza `contracts/SimpleVault.sol` si seteaza:
+
+```solidity
+bool public challenge2SecureMode = true;
+```
 
 ### 6.4 Generare JSON Challenge 2
 
@@ -291,12 +292,11 @@ const result = {
   studentId: instance.studentId,
   instanceId: instance.instanceId,
   answers: {
-    q1VulnerabilityPattern: 'reentrancy',
-    q2RemediationPattern: 'checks-effects-interactions',
     q3VaultAddress: attack.vaultAddress,
     q4InitialVaultBalanceEth: attack.initialVaultBalanceEth,
     q5AttackerContractAddress: attack.attackerAddress,
-    q6FinalVaultBalanceEth: attack.finalVaultBalanceEth
+    q6FinalVaultBalanceEth: attack.finalVaultBalanceEth,
+    q7ContractPatchCode: '1'
   }
 };
 
@@ -306,24 +306,23 @@ console.log('challenge2-results.json generat!');
 console.log(JSON.stringify(result, null, 2));
 "
 ```
-
 ### 6.5 Validare format Challenge 2
 
 ```bash
 npm run validate:results -- --challenge2
 ```
 
-**Output aÈ™teptat**: `[OK] Challenge 2: ...` + `Submission format validation passed.`
+**Output așteptat**: `[OK] Challenge 2: ...` + `Submission format validation passed.`
 
 ---
 
-## Pasul 7: Validare finalÄƒ (ambele challenge-uri)
+## Pasul 7: Validare finală (ambele challenge-uri)
 
 ```bash
 npm run validate:results
 ```
 
-**Output aÈ™teptat**:
+**Output așteptat**:
 ```
 [OK] Challenge 1: .../student/submissions/challenge1-results.json
 [OK] Challenge 2: .../student/submissions/challenge2-results.json
@@ -347,44 +346,45 @@ echo "   ..."
 
 ---
 
-## Pasul 8: Cleanup (opÈ›ional)
+## Pasul 8: Cleanup (opțional)
 
-DacÄƒ vrei sÄƒ resetezi totul È™i sÄƒ testezi din nou de la zero:
+Dacă vrei să resetezi totul și să testezi din nou de la zero:
 
 ```bash
-# OpreÈ™te Ganache (Ctrl+C Ã®n terminalul respectiv)
+# Oprește Ganache (Ctrl+C în terminalul respectiv)
 
-# È˜terge artefactele generate
+# Șterge artefactele generate
 npm run clean:generated
 
-# È˜terge cache-ul Hardhat
+# Șterge cache-ul Hardhat
 npm run clean
 
-# VerificÄƒ cÄƒ s-au È™ters
-ls student/instance.json 2>/dev/null && echo "WARN: instance.json Ã®ncÄƒ existÄƒ" || echo "OK: instance.json È™ters"
-ls deployments/*.json 2>/dev/null && echo "WARN: deployments Ã®ncÄƒ au JSON-uri" || echo "OK: deployments curat"
+# Verifică că s-au șters
+ls student/instance.json 2>/dev/null && echo "WARN: instance.json încă există" || echo "OK: instance.json șters"
+ls deployments/*.json 2>/dev/null && echo "WARN: deployments încă au JSON-uri" || echo "OK: deployments curat"
 ```
 
-Apoi reÃ®ncepe de la **Pasul 1**.
+Apoi reîncepe de la **Pasul 1**.
 
 ---
 
 ## Checklist rezumat
 
-| Pas | ComandÄƒ | Verificare |
+| Pas | Comandă | Verificare |
 |---|---|---|
-| Install | `npm install` | FÄƒrÄƒ erori |
+| Install | `npm install` | Fără erori |
 | Compile | `npx hardhat compile` | `Compiled N Solidity files` |
 | Init student | `npm run init:student -- --student-number 42 --force` | `Instance generated successfully` |
 | Start Ganache | `LAB_GANACHE_MODE=cli ./start-ganache.sh` | Port 7545 activ |
 | Deploy C1 | `npm run deploy:challenge1` | `challenge1-data.json` creat |
 | Deploy C2 | `npm run deploy:vault` | `simple-vault.json` creat |
+| Patch C2 | editeaza `contracts/SimpleVault.sol` | `challenge2SecureMode = true` |
 | Verify setup | `npm run verify-setup` | `Setup verification PASSED!` |
-| Inspect tx | `npm run inspect:tx -- <hash> --show-input` | AfiÈ™eazÄƒ input + ASCII |
-| Trace funds | `npm run trace:funds -- <hash> 100` | ListeazÄƒ toate hop-urile |
-| Run attack | `npm run attack` | Vault golit, valorile Q6-Q9 afiÈ™ate |
+| Inspect tx | `npm run inspect:tx -- <hash> --show-input` | Afișează input + ASCII |
+| Trace funds | `npm run trace:funds -- <hash> 100` | Listează toate hop-urile |
+| Run attack | `npm run attack` | Vault golit, valorile Q3-Q6 afisate |
 | Validate C1 | `npm run validate:results -- --challenge1` | `[OK] Challenge 1` |
 | Validate C2 | `npm run validate:results -- --challenge2` | `[OK] Challenge 2` |
 | Validate all | `npm run validate:results` | `Submission format validation passed` |
-| Cleanup | `npm run clean:generated` | FiÈ™ierele generate È™terse |
+| Cleanup | `npm run clean:generated` | Fișierele generate șterse |
 

@@ -11,6 +11,91 @@ const {
   INSTANCE_MANIFEST_PATH
 } = require("./lib/instance-config");
 
+const DEFAULT_COHORT_SEED = "LAB4-COHORT-2026";
+
+function buildFallbackChallenge1MessageCatalog() {
+  const actions = ["urmareste", "traseaza", "mapeaza", "auditeaza", "verifica"];
+  const adjectives = [
+    "discret",
+    "ascuns",
+    "critic",
+    "sigur",
+    "rapid",
+    "lent",
+    "adanc",
+    "clar",
+    "criptat",
+    "stratificat",
+    "mobil",
+    "stabil",
+    "tacit",
+    "activ",
+    "pasiv",
+    "strict",
+    "secret",
+    "focal",
+    "local",
+    "global"
+  ];
+  const targets = [
+    "registrul",
+    "portofelul",
+    "podul",
+    "seiful",
+    "semnalul",
+    "reteaua",
+    "transferul",
+    "ruta-cheii",
+    "traseul",
+    "predarea"
+  ];
+
+  const catalog = [];
+  actions.forEach((action) => {
+    adjectives.forEach((adjective) => {
+      targets.forEach((target) => {
+        catalog.push(`${action} ${adjective} ${target}`);
+      });
+    });
+  });
+  return catalog;
+}
+
+function loadChallenge1MessageCatalog() {
+  if (process.env.LAB_FORCE_C1_CATALOG_FALLBACK === "1") {
+    return buildFallbackChallenge1MessageCatalog();
+  }
+
+  try {
+    const loaded = require("./lib/challenge1-message-catalog");
+    const catalog = loaded && loaded.CHALLENGE1_MESSAGE_CATALOG;
+    if (Array.isArray(catalog) && catalog.length > 0) {
+      return catalog;
+    }
+
+    console.warn(
+      "[warn] Invalid challenge1 message catalog export. Using built-in fallback catalog."
+    );
+    return buildFallbackChallenge1MessageCatalog();
+  } catch (error) {
+    const missingCatalogModule =
+      error &&
+      error.code === "MODULE_NOT_FOUND" &&
+      String(error.message || "").includes("challenge1-message-catalog");
+
+    if (!missingCatalogModule) {
+      throw error;
+    }
+
+    console.warn(
+      "[warn] Missing scripts/lib/challenge1-message-catalog.js. Using built-in fallback catalog."
+    );
+    return buildFallbackChallenge1MessageCatalog();
+  }
+}
+
+const CHALLENGE1_MESSAGE_CATALOG = loadChallenge1MessageCatalog();
+
 class DeterministicRng {
   constructor(seedHex) {
     this.seed = Buffer.from(seedHex, "hex");
@@ -101,11 +186,10 @@ function parseArgs(argv) {
 
 function printHelp() {
   console.log(`Usage:
-  node scripts/generate-instance.js --student-number <1-100> [--salt <secret>] [--force]
+  node scripts/generate-instance.js --student-number <1-100> [--force]
 
 Options:
   --student-number  Student number from lab roster (1-100). Generates a unique student id.
-  --salt         Secret instructor salt. Falls back to LAB_INSTANCE_SALT env var.
   --force        Overwrite existing student instance files
   --help         Show this message
 `);
@@ -140,72 +224,104 @@ function asEthStringFromTenths(tenths) {
   return (tenths / 10).toFixed(1);
 }
 
-function buildStudentLabel(studentId) {
-  const normalized = String(studentId || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  if (!normalized) {
-    return "unknown-student";
-  }
-
-  return normalized.slice(0, 20);
+function pickChallenge1Message(seedHash) {
+  const catalogSize = BigInt(CHALLENGE1_MESSAGE_CATALOG.length);
+  const selector = BigInt(`0x${seedHash.slice(0, 16)}`);
+  const index = Number(selector % catalogSize);
+  return {
+    index,
+    text: CHALLENGE1_MESSAGE_CATALOG[index]
+  };
 }
 
-function buildChallenge1(rng, instanceTag, studentId) {
+function buildHopAccountIndices(rng, availableIndices, transferCount) {
+  if (!Array.isArray(availableIndices) || availableIndices.length === 0) {
+    throw new Error("Challenge 1 requires at least one available hop account.");
+  }
+
+  const indices = [];
+  const uniqueCandidates = rng.shuffle(availableIndices);
+
+  for (let i = 0; i < uniqueCandidates.length && indices.length < transferCount; i += 1) {
+    indices.push(uniqueCandidates[i]);
+  }
+
+  while (indices.length < transferCount) {
+    const candidate = availableIndices[rng.int(0, availableIndices.length - 1)];
+    const previous = indices[indices.length - 1];
+
+    if (availableIndices.length > 1 && candidate === previous) {
+      continue;
+    }
+
+    indices.push(candidate);
+  }
+
+  return indices;
+}
+
+function buildChallenge1(rng, catalogMessage) {
   const companyAccountIndex = 0;
   const available = [];
+  const accountCount = Math.max(2, Number(DEFAULT_INSTANCE.chain.accounts) || 10);
 
-  for (let i = 0; i < 10; i += 1) {
+  for (let i = 0; i < accountCount; i += 1) {
     if (i !== companyAccountIndex) {
       available.push(i);
     }
   }
 
-  const transferCount = rng.int(3, 5);
-  const hopAccountIndices = rng.shuffle(available).slice(0, transferCount);
+  const transferCount = rng.int(3, 10);
+  const hopAccountIndices = buildHopAccountIndices(rng, available, transferCount);
 
-  let amountTenths = rng.int(680, 940);
+  let amountTenths = rng.int(300, 950);
   const transferAmountsEth = [];
 
   for (let i = 0; i < transferCount; i += 1) {
     transferAmountsEth.push(asEthStringFromTenths(amountTenths));
 
     if (i < transferCount - 1) {
-      amountTenths -= rng.int(1, 6);
-      if (amountTenths < 200) {
-        amountTenths = 200;
+      const maxDropTenths = transferCount > 6 ? 9 : 7;
+      amountTenths -= rng.int(1, maxDropTenths);
+      if (amountTenths < 50) {
+        amountTenths = 50;
       }
     }
   }
 
-  const studentLabel = buildStudentLabel(studentId);
-  const message = `CTF-${instanceTag}: student-${studentLabel}; follow-the-money`;
+  const message = catalogMessage.text;
   const messageHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message));
 
   return {
     companyAccountIndex,
     hopAccountIndices,
     transferAmountsEth,
+    messageCatalogIndex: catalogMessage.index,
+    messageCatalogText: catalogMessage.text,
     message,
     messageHex
   };
 }
 
 function buildChallenge2(rng) {
-  const depositorAccountIndices = rng.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 4);
-  const initialDepositsEth = [
-    String(rng.int(16, 36)),
-    String(rng.int(14, 34)),
-    String(rng.int(12, 30)),
-    String(rng.int(15, 35))
-  ];
+  const accountCount = Math.max(2, Number(DEFAULT_INSTANCE.chain.accounts) || 10);
+  const availableDepositors = [];
+  for (let i = 1; i < accountCount; i += 1) {
+    availableDepositors.push(i);
+  }
 
-  const attackDepositEth = asEthStringFromTenths(rng.int(8, 20));
-  const maxAttacks = rng.int(3, 7);
+  const maxDepositors = Math.max(1, Math.min(8, availableDepositors.length));
+  const minDepositors = Math.min(3, maxDepositors);
+  const depositorCount = rng.int(minDepositors, maxDepositors);
+  const depositorAccountIndices = rng.shuffle(availableDepositors).slice(0, depositorCount);
 
+  const initialDepositsEth = depositorAccountIndices.map(() => String(rng.int(8, 34)));
+
+  const attackDepositEth = asEthStringFromTenths(rng.int(40, 120)); // 4.0 - 12.0 ETH
+  const attackDepositTenths = Math.max(1, Number.parseInt((Number(attackDepositEth) * 10).toFixed(0), 10));
+  const totalVaultTenths = initialDepositsEth.reduce((sum, amount) => sum + Number.parseInt(amount, 10) * 10, 0);
+  const minimumLoops = Math.ceil(totalVaultTenths / attackDepositTenths);
+  const maxAttacks = Math.max(3, Math.min(60, minimumLoops + rng.int(1, 4)));
   return {
     depositorAccountIndices,
     initialDepositsEth,
@@ -249,6 +365,12 @@ function main() {
     throw new Error("Option --student-id is no longer supported. Use --student-number <1-100>.");
   }
 
+  if (args.salt !== undefined) {
+    console.warn(
+      `[warn] Option --salt is ignored. Using fixed cohort seed: ${DEFAULT_COHORT_SEED}.`
+    );
+  }
+
   const studentNumberArg = args["student-number"] || process.env.STUDENT_NUMBER;
 
   if (studentNumberArg === undefined) {
@@ -259,22 +381,18 @@ function main() {
   const studentId = deriveStudentIdFromNumber(studentNumber);
   console.log(`[info] Derived student id from number ${studentNumber}: ${studentId}`);
 
-  const salt = args.salt || process.env.LAB_INSTANCE_SALT || "CHANGE_ME_INSTRUCTOR_SALT";
-  if (salt === "CHANGE_ME_INSTRUCTOR_SALT") {
-    console.warn(
-      "[warn] Using default salt. Set LAB_INSTANCE_SALT for stronger per-course separation."
-    );
-  }
+  const salt = DEFAULT_COHORT_SEED;
+  console.log(`[info] Using cohort seed: ${DEFAULT_COHORT_SEED}`);
 
   const seedHash = crypto
     .createHash("sha256")
     .update(`${studentId}:${salt}`)
     .digest("hex");
   const rng = new DeterministicRng(seedHash);
+  const catalogMessage = pickChallenge1Message(seedHash);
 
   const mnemonicEntropy = rng.bytes(16);
   const mnemonic = ethers.utils.entropyToMnemonic(mnemonicEntropy);
-  const instanceTag = seedHash.slice(0, 10).toUpperCase();
 
   const instance = deepClone(DEFAULT_INSTANCE);
   instance.version = 1;
@@ -284,7 +402,7 @@ function main() {
   instance.seedHash = seedHash;
   instance.generatedAt = new Date().toISOString();
   instance.chain.mnemonic = mnemonic;
-  instance.challenge1 = buildChallenge1(rng, instanceTag, studentId);
+  instance.challenge1 = buildChallenge1(rng, catalogMessage);
   instance.challenge2 = buildChallenge2(rng);
   instance.grading = {
     token: `CTF-${seedHash.slice(0, 12).toUpperCase()}`

@@ -230,8 +230,10 @@ const DEFAULT_INSTANCE = {
     companyAccountIndex: 0,
     hopAccountIndices: [1, 2, 3],
     transferAmountsEth: ["90.0", "89.5", "89.0"],
-    message: "CTF-DEFAULT: follow-the-money",
-    messageHex: ethers.utils.hexlify(ethers.utils.toUtf8Bytes("CTF-DEFAULT: follow-the-money"))
+    messageCatalogIndex: 0,
+    messageCatalogText: "urmareste discret registrul",
+    message: "urmareste discret registrul",
+    messageHex: ethers.utils.hexlify(ethers.utils.toUtf8Bytes("urmareste discret registrul"))
   },
   challenge2: {
     depositorAccountIndices: [1, 2, 3, 4],

@@ -3,11 +3,10 @@
   "studentId": "<id>",
   "instanceId": "lab4-...",
   "answers": {
-    "q1VulnerabilityPattern": "<token>",
-    "q2RemediationPattern": "<token>",
     "q3VaultAddress": "0x...",
     "q4InitialVaultBalanceEth": "0.0000",
     "q5AttackerContractAddress": "0x...",
-    "q6FinalVaultBalanceEth": "0.0000"
+    "q6FinalVaultBalanceEth": "0.0000",
+    "q7ContractPatchCode": "1"
   }
 }

@@ -11,6 +11,7 @@
 Un angajat EtherBank, cunoscut sub pseudonimul **CryptoThief**, a mutat fonduri din wallet-ul companiei prin mai multe adrese intermediare, încercând să ascundă traseul banilor.
 
 Datele sunt generate **per student** pe baza ID-ului tău. Hash-urile și adresele sunt unice; nu folosi valori din exemple vechi sau ale altor colegi.
+În funcție de ID, lanțul poate avea între **3 și 10 transferuri** (deci și 3-10 blocuri relevante în traseu).
 
 Misiunea ta:
 1. Urmărește lanțul transferurilor de ETH între adrese.
@@ -186,7 +187,7 @@ npm run inspect:tx -- <initialTransactionHash> --show-input
 ```
 
 ### 8. `decodedMessage`
-Mesajul text rezultat din decodarea valorii `initialInputHex` (hex → UTF-8). Începe cu `CTF-` și conține un marker `student-...` derivat din ID-ul studentului.
+Mesajul text rezultat din decodarea valorii `initialInputHex` (hex → UTF-8). Este doar textul din catalogul Challenge 1 (de exemplu `urmareste adanc transferul`).
 
 ---
 
@@ -261,7 +262,7 @@ Template complet:
     "finalAddress": "0x...",
     "totalGasFeeWei": "0",
     "initialInputHex": "0x...",
-    "decodedMessage": "CTF-...: student-...; follow-the-money"
+    "decodedMessage": "urmareste adanc transferul"
   }
 }
 ```

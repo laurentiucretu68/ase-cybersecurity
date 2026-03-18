@@ -94,7 +94,7 @@ async function main() {
   fs.writeFileSync(attackDataPath, `${JSON.stringify(attackData, null, 2)}\n`);
   console.log("\nDate salvate in:", path.relative(process.cwd(), attackDataPath));
   console.log(
-    "\nCopiaza valorile Q6-Q9 in student/submissions/challenge2-results.json"
+    "\nCopiaza valorile Q3-Q6 in student/submissions/challenge2-results.json"
   );
 }
 

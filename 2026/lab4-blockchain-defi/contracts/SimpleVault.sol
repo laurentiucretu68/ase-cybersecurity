@@ -14,6 +14,9 @@ contract SimpleVault {
     // Evidenta interna a depozitelor totale.
     uint256 public totalDeposits;
 
+    // Q7: daca este activ, retragerile folosesc ordinea CEI (effects inainte de interaction).
+    bool public challenge2SecureMode = false;
+
     event Deposit(address indexed user, uint256 amount);
     event Withdrawal(address indexed user, uint256 amount);
 
@@ -37,14 +40,24 @@ contract SimpleVault {
     function withdraw(uint256 _amount) public {
         require(balances[msg.sender] >= _amount, "Insufficient balance");
 
-        // Transfer catre apelant.
-        (bool success, ) = msg.sender.call{value: _amount}("");
-        require(success, "Transfer failed");
+        if (challenge2SecureMode) {
+            // CEI: effects inainte de interaction.
+            unchecked {
+                balances[msg.sender] -= _amount;
+                totalDeposits -= _amount;
+            }
 
-        // Actualizare contabila dupa transfer.
-        unchecked {
-            balances[msg.sender] -= _amount;
-            totalDeposits -= _amount;
+            (bool success, ) = msg.sender.call{value: _amount}("");
+            require(success, "Transfer failed");
+        } else {
+            // Varianta vulnerabila folosita pentru demonstratia de atac.
+            (bool success, ) = msg.sender.call{value: _amount}("");
+            require(success, "Transfer failed");
+
+            unchecked {
+                balances[msg.sender] -= _amount;
+                totalDeposits -= _amount;
+            }
         }
 
         emit Withdrawal(msg.sender, _amount);
@@ -58,13 +71,24 @@ contract SimpleVault {
         uint256 balance = balances[msg.sender];
         require(balance > 0, "No balance to withdraw");
 
-        // Transfer catre apelant.
-        (bool success, ) = msg.sender.call{value: balance}("");
-        require(success, "Transfer failed");
+        if (challenge2SecureMode) {
+            // CEI: effects inainte de interaction.
+            balances[msg.sender] = 0;
+            unchecked {
+                totalDeposits -= balance;
+            }
 
-        balances[msg.sender] = 0;
-        unchecked {
-            totalDeposits -= balance;
+            (bool success, ) = msg.sender.call{value: balance}("");
+            require(success, "Transfer failed");
+        } else {
+            // Varianta vulnerabila folosita pentru demonstratia de atac.
+            (bool success, ) = msg.sender.call{value: balance}("");
+            require(success, "Transfer failed");
+
+            balances[msg.sender] = 0;
+            unchecked {
+                totalDeposits -= balance;
+            }
         }
 
         emit Withdrawal(msg.sender, balance);

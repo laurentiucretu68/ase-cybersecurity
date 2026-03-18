@@ -8,8 +8,6 @@ const ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 const HEX_REGEX = /^0x[a-fA-F0-9]*$/;
 const UINT_STRING_REGEX = /^[0-9]+$/;
 const ETH_4DP_REGEX = /^[0-9]+(\.[0-9]{4})$/;
-const IDENTIFIER_REGEX = /^[A-Za-z_][A-Za-z0-9_]*$/;
-const TOKEN_REGEX = /^[a-z][a-z0-9-]*$/;
 
 function parseArgs(argv) {
   return {
@@ -135,14 +133,7 @@ function validateChallenge2(root) {
   }
 
   const a = root.answers;
-
-  if (!isNonEmptyString(a.q1VulnerabilityPattern) || !TOKEN_REGEX.test(a.q1VulnerabilityPattern)) {
-    pushError(errors, "answers.q1VulnerabilityPattern", "must be a lowercase token");
-  }
-
-  if (!isNonEmptyString(a.q2RemediationPattern) || !TOKEN_REGEX.test(a.q2RemediationPattern)) {
-    pushError(errors, "answers.q2RemediationPattern", "must be a lowercase token");
-  }
+  const projectRoot = path.resolve(__dirname, "..");
 
   if (!isNonEmptyString(a.q3VaultAddress) || !ADDRESS_REGEX.test(a.q3VaultAddress)) {
     pushError(errors, "answers.q3VaultAddress", "must be a valid address");
@@ -158,6 +149,32 @@ function validateChallenge2(root) {
 
   if (!isNonEmptyString(a.q6FinalVaultBalanceEth) || !ETH_4DP_REGEX.test(a.q6FinalVaultBalanceEth)) {
     pushError(errors, "answers.q6FinalVaultBalanceEth", "must be numeric string with 4 decimals");
+  }
+
+  if (!isNonEmptyString(a.q7ContractPatchCode) || !UINT_STRING_REGEX.test(a.q7ContractPatchCode)) {
+    pushError(errors, "answers.q7ContractPatchCode", "must be an unsigned integer string");
+  } else {
+    if (a.q7ContractPatchCode !== "1") {
+      pushError(
+        errors,
+        "answers.q7ContractPatchCode",
+        "must be '1' (secure mode enabled)"
+      );
+    }
+
+    const vaultContractPath = path.join(projectRoot, "contracts", "SimpleVault.sol");
+    if (fs.existsSync(vaultContractPath)) {
+      const contractSource = fs.readFileSync(vaultContractPath, "utf8");
+      const secureModeRegex = /challenge2SecureMode\s*=\s*true\s*;/;
+
+      if (!secureModeRegex.test(contractSource)) {
+        pushError(
+          errors,
+          "contracts/SimpleVault.sol",
+          "must contain challenge2SecureMode set to true"
+        );
+      }
+    }
   }
 
   return errors;
