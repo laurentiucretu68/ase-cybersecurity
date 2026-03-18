@@ -1,0 +1,13 @@
+{
+  "challenge": "challenge2-reentrancy",
+  "studentId": "<id>",
+  "instanceId": "lab2-...",
+  "answers": {
+    "q1VaultAddress": "0x...",
+    "q2InitialVaultBalanceEth": "0.0000",
+    "q3AttackerContractAddress": "0x...",
+    "q4FinalVaultBalanceEth": "0.0000",
+    "q5AttackGasFeeEth": "0.000000",
+    "q6ContractPatchCode": "0000"
+  }
+}
