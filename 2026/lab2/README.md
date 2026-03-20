@@ -8,6 +8,12 @@ Inainte de setup, descarca masina virtuala de laborator de aici:
 
 [Google Drive - Lab 2 VM](https://drive.google.com/drive/folders/1sJwEBAlUX0DbAUMGGeNnWIvd9u2-sEIC?usp=drive_link)
 
+Imaginea VM este pentru arhitectura x86; varianta pentru ARM este in lucru.
+
+## Incarcare rezultate
+
+[Google Form — încărcare rezultate](https://forms.gle/VYafroA8dbDQxrQw8)
+
 ## Obiective
 
 La finalul laboratorului vei sti:
@@ -46,7 +52,7 @@ Scriptul instaleaza: Node.js + npm, Ganache CLI + GUI, VS Code + extensii, Firef
 **Cerinte**: Node.js 16+, npm, Git.
 
 ```bash
-git clone https://github.com/[username]/ase-cybersecurity.git
+git clone https://github.com/laurentiucretu68/ase-cybersecurity.git
 cd ase-cybersecurity/2026/lab2
 npm install
 ```
