@@ -4,11 +4,19 @@
 
 ## Descarcare masina virtuala (obligatoriu)
 
-Inainte de setup, descarca masina virtuala de laborator de aici:
+Inainte de setup, descarca masina virtuala de laborator potrivita arhitecturii tale:
 
-[Google Drive - Lab 2 VM](https://drive.google.com/drive/folders/1sJwEBAlUX0DbAUMGGeNnWIvd9u2-sEIC?usp=drive_link)
+- [Google Drive - Lab 2 VM (x86)](https://drive.google.com/drive/folders/1sJwEBAlUX0DbAUMGGeNnWIvd9u2-sEIC?usp=drive_link)
+- [Google Drive - Lab 2 VM (ARM)](https://drive.google.com/drive/folders/16GqcOi0JCXc2mtJ0lPY6SLbvgrE24mtE?usp=drive_link)
 
-Imaginea VM este pentru arhitectura x86; varianta pentru ARM este in lucru.
+Important:
+- pe VM-ul ARM nu functioneaza Ganache GUI; foloseste doar Ganache CLI;
+- pe VM-ul ARM foloseste shortcut-ul `Start Ganache` de pe Desktop;
+- cand se deschide `Start Ganache`, se deschid 2 terminale:
+  - primul terminal genereaza ID-ul pe baza numarului studentului si porneste Ganache CLI;
+  - al doilea terminal este cel care trebuie folosit pentru rularea celorlalte comenzi din laborator;
+- nu inchide primul terminal pe toata durata laboratorului; daca il inchizi, opresti chain-ul local;
+- pentru rezolvarea cerintelor foloseste si fisierele generate in `deployments/`.
 
 ## Incarcare rezultate
 
@@ -45,7 +53,7 @@ chmod +x setup-vm.sh
 ./setup-vm.sh
 ```
 
-Scriptul instaleaza: Node.js + npm, Ganache CLI + GUI, VS Code + extensii, Firefox, repo-ul laboratorului, shortcut-uri desktop.
+Scriptul instaleaza: Node.js + npm, Ganache CLI, iar pe varianta x86 si Ganache GUI, VS Code + extensii, Firefox, repo-ul laboratorului, shortcut-uri desktop.
 
 ### Varianta 2: Setup manual
 
@@ -66,15 +74,18 @@ npm run deploy:all
 npm run verify-setup
 ```
 
-### Verificari in Ganache GUI
+Pe VM-ul ARM, porneste chain-ul local din shortcut-ul `Start Ganache`, apoi ruleaza restul comenzilor din al doilea terminal deschis automat.
 
-- RPC: `http://127.0.0.1:7545`
-- Network ID: `1337`
-- Workspace: `Quickstart` sau `BLOCKCHAIN-DEFI`
+### Verificari chain local
+
+- x86: in Ganache GUI verifica `RPC: http://127.0.0.1:7545`, `Network ID: 1337` si workspace-ul `Quickstart` sau `BLOCKCHAIN-DEFI`
+- ARM: in terminalul in care ruleaza Ganache CLI sau cu `npm run verify-setup` verifica `RPC: http://127.0.0.1:7545` si `Network ID: 1337`
 
 ---
 
 ## Challenges
+
+Pentru rezolvarea cerintelor foloseste si fisierele generate in `deployments/` pentru a extrage date utile. Exemple: `deployments/challenge1-data.json`, `deployments/simple-vault.json`, `deployments/attack-results.json`.
 
 ### Challenge 1: Blockchain Forensics (50p)
 - documentatie: [challenges/challenge1-forensics.md](challenges/challenge1-forensics.md)
