@@ -1,0 +1,16 @@
+services:
+  db:
+    image: container-registry.oracle.com/database/free:latest-lite
+    container_name: lab3-oracle
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+    environment:
+      ORACLE_PWD: Oracle12345!
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./db:/workspace/db:ro
+      - ./student:/workspace/student:ro
+
+volumes:
+  oracle-data:

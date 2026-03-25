@@ -1,0 +1,9 @@
+{
+  "studentNumber": 0,
+  "instanceId": "lab3-000-EXAMPLE",
+  "challengeProfile": "profile_example",
+  "challengeInjectionType": "union_parse_example",
+  "usedPayload": "NU_EXISTA%' UNION SELECT col1, col2, col3, col4 FROM tabela -- ",
+  "exampleDynamicField": "",
+  "blockedPayloadAfterFix": ""
+}

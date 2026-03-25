@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ app_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Laborator Cybersecurity 3</p>
+          <h1>{{ app_title }}</h1>
+        </div>
+        <div class="status-chip {{ 'status-chip-safe' if search_mode == 'secure' else 'status-chip-risky' }}">
+          Mod query: {{ search_mode_label }}
+        </div>
+      </header>
+
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>

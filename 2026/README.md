@@ -34,6 +34,21 @@ Securitatea blockchain-ului și vulnerabilitățile smart contracts prin scenari
 
 [➡️ Accesează Lab 2](lab2/)
 
+### [Lab 3: Matchday Leak - Docker, Oracle & SQL Injection](lab3/)
+
+**Durată**: 2-3 ore  
+**Dificultate**: Beginner-Intermediate
+
+Laborator practic despre baze de date rulate in Docker si despre una dintre cele mai cunoscute vulnerabilitati web:
+- **Oracle in Docker** - pornirea si initializarea unei baze de date intr-un container
+- **Interfata web vulnerabila** - cautare de jucatori pe tema meciului Turcia - Romania
+- **SQL Injection** - identificarea si exploatarea controlata a unui query construit nesigur
+- **Hardening** - discutie despre bind variables, least privilege si reducerea impactului
+
+**Tehnologii**: Docker, Oracle Database Free, Flask, SQL
+
+[Accesează Lab 3](lab3/)
+
 ---
 
 **Note**: Consultă [ediția 2025](../2025/) pentru referințe la materialele anterioare.

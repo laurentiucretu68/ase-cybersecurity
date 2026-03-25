@@ -1,0 +1,38 @@
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+
+ALTER SESSION SET CONTAINER = FREEPDB1;
+
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLESPACE matchday_data INCLUDING CONTENTS AND DATAFILES';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE != -959 THEN
+      RAISE;
+    END IF;
+END;
+/
+
+BEGIN
+  EXECUTE IMMEDIATE 'DROP USER matchday CASCADE';
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE != -1918 THEN
+      RAISE;
+    END IF;
+END;
+/
+
+CREATE TABLESPACE matchday_data
+  DATAFILE '/opt/oracle/oradata/FREE/FREEPDB1/matchday_data01.dbf' SIZE 100M
+  AUTOEXTEND ON NEXT 20M MAXSIZE UNLIMITED;
+
+CREATE USER matchday IDENTIFIED BY "Matchday123!";
+GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE SEQUENCE TO matchday;
+ALTER USER matchday DEFAULT TABLESPACE matchday_data QUOTA UNLIMITED ON matchday_data;
+@/workspace/student/generated/student-db-credentials.sql
+
+ALTER SESSION SET CURRENT_SCHEMA = matchday;
+@/workspace/db/schema.sql
+@/workspace/db/seed.sql
+@/workspace/student/generated/student-seed.sql
+EXIT
