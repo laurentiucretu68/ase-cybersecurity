@@ -170,3 +170,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 .qodo
+
+# Lab 3 generated student instance files
+/2026/lab3/student/instance.json
+/2026/lab3/student/generated/*.sql
+!/2026/lab3/student/generated/.gitkeep
+/2026/lab3/student/submissions/lab3-results.json

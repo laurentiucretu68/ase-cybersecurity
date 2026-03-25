@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Dashboard intern de scouting</p>
+      {% if instance_context %}
+        <p class="hero-instance">
+          {{ instance_context.studentLabel }} | {{ instance_context.instanceId }}
+        </p>
+        <p class="hero-instance">
+          Profil de challenge: {{ instance_context.challengeProfileId }} | {{ instance_context.challengeProfileLabel }}
+        </p>
+        {% if instance_context.dbCredentials %}
+          <p class="hero-instance">
+            DB login: {{ instance_context.dbCredentials.user }} / {{ instance_context.dbCredentials.password }}
+          </p>
+        {% endif %}
+      {% else %}
+        <p class="hero-instance">Instanta studentului nu a fost initializata inca.</p>
+      {% endif %}
+      {% if match_card %}
+        <h2>{{ match_card.match_label }}</h2>
+        <p class="hero-meta">
+          ID meci {{ match_card.match_id }} | {{ match_card.stage }} | {{ match_card.venue }}
+        </p>
+        <p class="hero-kickoff">{{ match_card.kickoff_label }}</p>
+      {% else %}
+        <h2>Conexiunea la Oracle nu este gata</h2>
+        <p class="hero-meta">Porneste baza de date si initializeaza schema inainte sa deschizi dashboard-ul.</p>
+      {% endif %}
+    </div>
+
+    <div class="hero-panel">
+      <p class="panel-title">Misiune</p>
+      <p>
+        Exploateaza fluxul vulnerabil de cautare, extrage datele interne pentru meciul
+        Turcia vs Romania, apoi repara query-ul si verifica faptul ca acelasi payload nu mai
+        functioneaza.
+      </p>
+    </div>
+  </section>
+
+  {% if db_error %}
+    <section class="card card-error">
+      <h3>Eroare baza de date</h3>
+      <p>{{ db_error }}</p>
+    </section>
+  {% endif %}
+
+  <section class="grid two-up">
+    <section class="card">
+      <h3>Cautare jucatori</h3>
+      <p class="muted">
+        Indiciu: parametrul de cautare este introdus direct intre apostrofuri in
+        <code>LIKE '{search}'</code>. Incepe cu un apostrof simplu pentru a observa eroarea, apoi
+        construieste payload-uri <code>UNION SELECT</code> cu 4 coloane, filtrate pe
+        <code>scouting_reports</code>. Blocul de debug de mai jos afiseaza query-ul generat.
+      </p>
+
+      <form class="search-form" method="get" action="/">
+        <label>
+          Echipa
+          <select name="team">
+            {% for option in teams %}
+              <option value="{{ option.value }}" {% if option.value == team %}selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label>
+          Tipar de cautare
+          <input name="q" value="{{ search }}" placeholder="%">
+        </label>
+
+        <button type="submit">Ruleaza cautarea</button>
+      </form>
+
+      {% if search_error %}
+        <div class="callout danger">
+          <strong>Eroare query:</strong> {{ search_error }}
+        </div>
+      {% endif %}
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Element</th>
+              <th>Context</th>
+              <th>Categorie</th>
+              <th>Detaliu</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if search_results %}
+              {% for row in search_results %}
+                <tr>
+                  <td>{{ row.item_label }}</td>
+                  <td>{{ row.context_label }}</td>
+                  <td>{{ row.category_label }}</td>
+                  <td>{{ row.detail_value }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4">Nu a fost returnat niciun rand.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Checklist challenge</h3>
+      <ul class="checklist">
+        <li>Campurile pe care trebuie sa le extragi sunt unice pentru numarul tau de student N.</li>
+        {% for field in required_fields %}
+          <li>{{ field.label }}</li>
+        {% endfor %}
+        <li>Repara <code>run_player_search</code> si confirma ca badge-ul trece in modul <code>securizat</code>.</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Atentie:</strong> interfata afiseaza intentionat SQL-ul generat pentru ca laboratorul
+        sa fie mai usor de analizat. Intr-o aplicatie reala, asta ar fi o scurgere severa de informatii.
+      </div>
+
+      <div class="callout">
+        <strong>Hint-uri utile:</strong>
+        incearca un prefix precum <code>NU_EXISTA%</code> ca sa vezi mai clar randurile injectate.
+        Metadatele meciului vin din <code>matches</code>, iar datele interne vin din
+        <code>scouting_reports</code>. Campurile interne din rapoarte apar frecvent in
+        <code>report_text</code> sub forma <code>CHEIE=valoare | CHEIE=valoare</code>.
+      </div>
+    </section>
+  </section>
+
+  <section class="grid two-up">
+    <section class="card">
+      <h3>SQL generat</h3>
+      {% if debug_sql %}
+        <pre class="sql-box">{{ debug_sql }}</pre>
+      {% else %}
+        <p class="muted">Ruleaza o cautare pentru a inspecta instructiunea SQL.</p>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h3>Rapoarte publice</h3>
+      <div class="report-list">
+        {% for report in public_reports %}
+          <article class="report-card">
+            <p class="report-visibility">{{ report.visibility }}</p>
+            <h4>{{ report.report_title }}</h4>
+            <p>{{ report.report_text }}</p>
+          </article>
+        {% else %}
+          <p class="muted">Nu exista rapoarte publice disponibile.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </section>
+{% endblock %}
