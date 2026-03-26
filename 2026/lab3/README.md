@@ -2,6 +2,10 @@
 
 > Rol: esti security analyst pentru o aplicatie interna de scouting construita in graba pentru meciul `Turcia - Romania`. Baza de date ruleaza in Docker, iar interfata web expune un flux vulnerabil la SQL injection.
 
+## Incarcare rezultate
+
+[Google Form - incarcare rezultate](https://forms.gle/VRD7vw1rPh9phBjt7)
+
 ## Obiective
 
 La finalul laboratorului vei sti:
