@@ -242,6 +242,7 @@ Folosind aplicatia web si cunostintele din `THEORY.md`, exploateaza SQL injectio
 
 Hint-uri de lucru:
 - daca vrei sa vezi in principal randurile injectate, foloseste un prefix care nu ar trebui sa potriveasca niciun jucator, de exemplu `NU_EXISTA%`;
+- daca payload-ul tau inchide sirul din `LIKE '...'`, incheie-l cu `--` ca sa comentezi restul query-ului generat de aplicatie;
 - unele campuri nu sunt stocate in coloane separate, ci in `report_text`, sub forma `CHEIE=valoare`;
 - cand ai extras un `report_text`, separa logic bucata relevanta dupa delimitatorul `|`.
 
