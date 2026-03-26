@@ -282,7 +282,7 @@ Template-ul contine:
   "instanceId": "lab3-005-XXXXXXXX",
   "challengeProfile": "profile_x",
   "challengeInjectionType": "union_x",
-  "usedPayload": "NU_EXISTA%' UNION SELECT ... -- ",
+  "usedPayload": "",
   "...campurile exacte generate pentru profilul tau...": "",
   "mitigationImplemented": false,
   "blockedPayloadAfterFix": ""
@@ -301,6 +301,7 @@ Campurile exacte pe profil sunt:
 
 Cum afli concret campurile tale:
 - deschide `student/instance.json` si citeste lista `requiredFields`;
+- daca ai nevoie de titlul fix al notei Turciei, il gasesti separat in `turkeyPressingReportTitle`;
 - sau deschide direct `student/submissions/lab3-results.json`, care este deja pre-populat cu cheile exacte pentru profilul tau.
 
 `blockedPayloadAfterFix` trebuie sa contina exact payload-ul pe care l-ai folosit la exploatare si pe care l-ai re-testat dupa fix.
